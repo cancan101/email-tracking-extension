@@ -1,11 +1,12 @@
 {
-  "name": "chrome-extension-boilerplate-react",
+  "name": "email-tracking-extension",
   "version": "4.3.5",
-  "description": "A chrome extension boilerplate built with React 17, Webpack 5, and Webpack Dev Server 4",
+  "description": "A chrome extension to orchestrate email open track from Gmail",
+  "private": true,
   "license": "MIT",
   "repository": {
     "type": "git",
-    "url": "https://github.com/lxieyang/chrome-extension-boilerplate-react.git"
+    "url": "https://github.com/cancan101/email-tracking-extension.git"
   },
   "scripts": {
     "build": "node utils/build.js",
@@ -14,9 +15,12 @@
   },
   "dependencies": {
     "@hot-loader/react-dom": "^17.0.2",
+    "gmail-js": "^1.0.18",
+    "jquery": "^3.6.0",
     "react": "^17.0.2",
     "react-dom": "^17.0.2",
-    "react-hot-loader": "^4.13.0"
+    "react-hot-loader": "^4.13.0",
+    "uuid": "^8.3.2"
   },
   "devDependencies": {
     "@babel/core": "^7.17.0",
@@ -26,6 +30,7 @@
     "@types/chrome": "^0.0.177",
     "@types/react": "^17.0.39",
     "@types/react-dom": "^17.0.11",
+    "@types/uuid": "^8.3.4",
     "babel-eslint": "^10.1.0",
     "babel-loader": "^8.2.3",
     "babel-preset-react-app": "^10.0.1",

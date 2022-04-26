@@ -40,12 +40,13 @@ var options = {
     options: path.join(__dirname, 'src', 'pages', 'Options', 'index.jsx'),
     popup: path.join(__dirname, 'src', 'pages', 'Popup', 'index.jsx'),
     background: path.join(__dirname, 'src', 'pages', 'Background', 'index.js'),
-    contentScript: path.join(__dirname, 'src', 'pages', 'Content', 'index.js'),
+    contentScript: path.join(__dirname, 'src', 'pages', 'Content', 'index.ts'),
     devtools: path.join(__dirname, 'src', 'pages', 'Devtools', 'index.js'),
     panel: path.join(__dirname, 'src', 'pages', 'Panel', 'index.jsx'),
+    gmailJsLoader: path.join(__dirname, 'src', 'gmailJsLoader.ts'),
   },
   chromeExtensionBoilerplate: {
-    notHotReload: ['background', 'contentScript', 'devtools'],
+    notHotReload: ['background', 'contentScript', 'devtools', 'gmailJsLoader'],
   },
   output: {
     filename: '[name].bundle.js',
