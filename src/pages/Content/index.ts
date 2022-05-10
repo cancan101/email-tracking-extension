@@ -13,13 +13,13 @@ function addScript(src: string): void {
 
 addScript('gmailJsLoader.bundle.js');
 
-window.addEventListener(
-  'get-settings-data',
-  function (event) {
-    console.log('get-settings-data');
-    window.dispatchEvent(
-      new CustomEvent('settings-retrieved', { detail: 'settingsData' })
-    );
-  },
-  false
-);
+// window.addEventListener(
+//   'get-settings-data',
+//   function (event) {
+//     console.log('get-settings-data');
+//     window.dispatchEvent(
+//       new CustomEvent('settings-retrieved', { detail: 'settingsData' })
+//     );
+//   },
+//   false
+// );

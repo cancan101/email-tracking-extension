@@ -84,14 +84,14 @@ gmail.observe.on('view_thread', function (obj) {
 // -------------------------------------------------
 
 gmail.observe.on('load', () => {
-  window.addEventListener(
-    'settings-retrieved',
-    function (event: any) {
-      console.log('settings-retrieved', event.detail);
-    },
-    false
-  );
-  window.dispatchEvent(new CustomEvent('get-settings-data'));
+  // window.addEventListener(
+  //   'settings-retrieved',
+  //   function (event: any) {
+  //     console.log('settings-retrieved', event.detail);
+  //   },
+  //   false
+  // );
+  // window.dispatchEvent(new CustomEvent('get-settings-data'));
 
   userEmail = gmail.get.user_email();
 
