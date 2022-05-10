@@ -22,7 +22,7 @@
       "run_at": "document_start"
     },
     {
-      "matches": ["https://email-tracking-api.herokuapp.com/login", "http://localhost:8000/login"],
+      "matches": ["__EMAIL_TRACKING_BACKEND_URL__/login"],
       "js": ["login.bundle.js"]
     }
   ],
@@ -32,14 +32,12 @@
       "matches": []
     },
     {
-      "resources": ["gmailJsLoader.bundle.js"],
+      "resources": ["gmailJsLoader.bundle.js", "gmailJsLoader.bundle.js.map"],
       "matches": ["https://mail.google.com/*"]
     }
   ],
-  "host_permissions": [
-    "https://mail.google.com/*"
-  ],
-  "permissions":["storage"],
+  "host_permissions": ["https://mail.google.com/*"],
+  "permissions": ["storage"],
   "externally_connectable": {
     "matches": ["https://mail.google.com/*"]
   }

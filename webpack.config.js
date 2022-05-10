@@ -7,6 +7,13 @@ var webpack = require('webpack'),
   TerserPlugin = require('terser-webpack-plugin');
 var { CleanWebpackPlugin } = require('clean-webpack-plugin');
 const Dotenv = require('dotenv-webpack');
+const dotenv = require('dotenv');
+
+// -------------------------------------------------
+
+dotenv.config();
+
+// -------------------------------------------------
 
 const ASSET_PATH = process.env.ASSET_PATH || '/';
 
@@ -132,11 +139,22 @@ var options = {
           force: true,
           transform: function (content, path) {
             // generates the manifest file using the package.json informations
+
+            // TODO(cancan101):
+            // - remove source maps
+
+            const manifestContents = content
+              .toString()
+              .replace(
+                '__EMAIL_TRACKING_BACKEND_URL__',
+                process.env.EMAIL_TRACKING_BACKEND_URL
+              );
+
             return Buffer.from(
               JSON.stringify({
                 description: process.env.npm_package_description,
                 version: process.env.npm_package_version,
-                ...JSON.parse(content.toString()),
+                ...JSON.parse(manifestContents),
               })
             );
           },
@@ -146,6 +164,7 @@ var options = {
     new CopyWebpackPlugin({
       patterns: [
         {
+          // TODO(cancan101): transform url here
           from: 'src/pages/Content/content.styles.css',
           to: path.join(__dirname, 'build'),
           force: true,

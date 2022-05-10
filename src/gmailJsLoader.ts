@@ -1,5 +1,6 @@
 import { v4 as uuidv4 } from 'uuid';
 import jQuery from 'jquery';
+import { decodeJwt } from 'jose';
 
 // import style required for TS to work
 const GmailFactory = require('gmail-js');
@@ -18,6 +19,7 @@ const baseUrl = process.env.EMAIL_TRACKING_BACKEND_URL;
 const imageUrl = `${baseUrl}/image.gif`;
 const reportUrl = `${baseUrl}/report`;
 const infoUrl = `${baseUrl}/info`;
+const dashboardUrl = `${baseUrl}/dashboard`;
 const loginUrl = `${baseUrl}/login/magic`;
 
 const btnInfoClass = 'btn-MyButton';
@@ -36,6 +38,7 @@ let userEmail: string | null = null;
 let accessToken = '';
 // TODO(cancan101): should we use another sentinel value like 0?
 let expiresAt: number | null = null;
+let sub: string | null = null;
 
 function getAuthorization(): string {
   return `Bearer ${accessToken}`;
@@ -121,7 +124,7 @@ gmail.observe.on('load', () => {
 
                   gmail.tools.add_modal_window(
                     'Tracking information',
-                    `<ol>${listContents}</ol>`,
+                    `<ol>${listContents.join('')}</ol>`,
                     () => {
                       gmail.tools.remove_modal_window();
                     }
@@ -144,7 +147,24 @@ gmail.observe.on('load', () => {
         if (isLoggedIn()) {
           gmail.tools.add_toolbar_button(
             'Tracking',
-            async () => {},
+            async () => {
+              const resp = await fetchAuth(`${dashboardUrl}?userId=${sub}`);
+              if (resp.ok) {
+                const data = await resp.json();
+
+                const listContents = data.views.map(
+                  (x: any) => `<li>${x.createdAt} (${x.tracker.threadId})</li>`
+                );
+
+                gmail.tools.add_modal_window(
+                  'Tracking information',
+                  `<ol>${listContents.join('')}</ol>`,
+                  () => {
+                    gmail.tools.remove_modal_window();
+                  }
+                );
+              }
+            },
             btnInfoClass
           );
         } else {
@@ -176,7 +196,11 @@ gmail.observe.on('load', () => {
       // handle the response
       accessToken = response.accessToken;
       expiresAt = response.expiresAt;
-      console.log('Received log in info', response);
+
+      const claims = decodeJwt(accessToken);
+      sub = claims.sub ?? null;
+
+      console.log('Received log in info', response, sub);
     }
   );
 
@@ -197,10 +221,13 @@ gmail.observe.on('load', () => {
       // );
 
       const emailId = data['1'];
-      console.log('Email ID:', emailId);
+      console.log('Email ID:', emailId, data.id);
 
       const threadId = response[2]?.[6]?.[0]?.[1]?.[1];
       console.log('Thread ID:', threadId);
+
+      const emailSubject = data.subject;
+      console.log('emailSubject:', emailSubject);
 
       const parser = new DOMParser();
       const document = parser.parseFromString(data.content_html, 'text/html');
@@ -232,6 +259,7 @@ gmail.observe.on('load', () => {
           emailId,
           threadId,
           trackId,
+          emailSubject,
         };
 
         try {
@@ -271,6 +299,7 @@ gmail.observe.on('load', () => {
         const trackingPixelHtml = `<div height="1" width="1" style="background-image: url('${url}');" data-src="${url}" class="tracker-img"></div>`;
 
         const mail_body = compose.body();
+        // TODO(cancan101): remove old trackers
         compose.body(mail_body + trackingPixelHtml);
 
         ids.push(trackId);

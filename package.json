@@ -16,6 +16,7 @@
   "dependencies": {
     "@hot-loader/react-dom": "^17.0.2",
     "gmail-js": "^1.0.20",
+    "jose": "^4.8.1",
     "jquery": "^3.6.0",
     "react": "^17.0.2",
     "react-dom": "^17.0.2",
@@ -38,6 +39,7 @@
     "clean-webpack-plugin": "^4.0.0",
     "copy-webpack-plugin": "^7.0.0",
     "css-loader": "^6.6.0",
+    "dotenv": "^16.0.1",
     "dotenv-webpack": "^7.1.0",
     "eslint": "^8.8.0",
     "eslint-config-react-app": "^7.0.0",
