@@ -223,8 +223,8 @@ gmail.observe.on('load', () => {
       //   xhr
       // );
 
-      const emailId = data['1'];
-      console.log('Email ID:', emailId, data.id);
+      const emailId = data.id;
+      console.log('Email ID:', emailId);
 
       const threadId = response[2]?.[6]?.[0]?.[1]?.[1];
       console.log('Thread ID:', threadId);

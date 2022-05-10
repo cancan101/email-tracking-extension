@@ -164,10 +164,19 @@ var options = {
     new CopyWebpackPlugin({
       patterns: [
         {
-          // TODO(cancan101): transform url here
           from: 'src/pages/Content/content.styles.css',
           to: path.join(__dirname, 'build'),
           force: true,
+          transform: function (content, path) {
+            return Buffer.from(
+              content
+                .toString()
+                .replace(
+                  '__EMAIL_TRACKING_BACKEND_URL__',
+                  process.env.EMAIL_TRACKING_BACKEND_URL
+                )
+            );
+          },
         },
       ],
     }),
