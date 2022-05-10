@@ -153,7 +153,10 @@ gmail.observe.on('load', () => {
                 const data = await resp.json();
 
                 const listContents = data.views.map(
-                  (x: any) => `<li>${x.createdAt} (${x.tracker.threadId})</li>`
+                  (x: any) =>
+                    `<li>${x.createdAt} (${
+                      x.tracker.emailSubject || x.tracker.threadId
+                    })</li>`
                 );
 
                 gmail.tools.add_modal_window(
