@@ -14,16 +14,6 @@ function addScript(src: string): void {
 addScript('gmailJsLoader.bundle.js');
 
 window.addEventListener(
-  'message',
-  (event) => {
-    if (event.data === 'msgdata') {
-      console.log('message', event);
-    }
-  },
-  false
-);
-
-window.addEventListener(
   'get-settings-data',
   function (event) {
     console.log('get-settings-data');

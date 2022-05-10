@@ -1,15 +1,18 @@
 import { v4 as uuidv4 } from 'uuid';
 import jQuery from 'jquery';
 
+// import style required for TS to work
 const GmailFactory = require('gmail-js');
 
 // -------------------------------------------------
 
+// required to make TS happy
 const gmail = new GmailFactory.Gmail(jQuery) as Gmail;
 
 // -------------------------------------------------
 
 const extensionId = document.currentScript?.dataset.extensionId ?? '';
+// TODO(cancan101): handle missing extensionId
 
 const baseUrl = process.env.EMAIL_TRACKING_BACKEND_URL;
 const imageUrl = `${baseUrl}/image.gif`;
@@ -17,18 +20,24 @@ const reportUrl = `${baseUrl}/report`;
 const infoUrl = `${baseUrl}/info`;
 const loginUrl = `${baseUrl}/login/magic`;
 
-// -------------------------------------------------
-
-console.log('Running gmailJsLoader', extensionId);
-console.log('baseUrl', baseUrl);
+const btnInfoClass = 'btn-MyButton';
 
 // -------------------------------------------------
 
+console.log(
+  `Running gmailJsLoader w/ extensionId: ${extensionId}; baseUrl: ${baseUrl}`
+);
+
+// -------------------------------------------------
+
+// TODO(cancan101): use proper state system
 let userEmail: string | null = null;
+// TODO(cancan101): should we allow this to be null?
 let accessToken = '';
+// TODO(cancan101): should we use another sentinel value like 0?
 let expiresAt: number | null = null;
 
-function getAuthorization() {
+function getAuthorization(): string {
   return `Bearer ${accessToken}`;
 }
 
@@ -66,20 +75,16 @@ gmail.observe.on('view_email', function (domEmail) {
 
 gmail.observe.on('view_thread', function (obj) {
   const threadData = gmail.new.get.thread_data(obj);
-
   console.log('view_thread. obj:', obj, threadData);
 });
 
 // -------------------------------------------------
 
 gmail.observe.on('load', () => {
-  window.postMessage('msgdata', '*');
   window.addEventListener(
     'settings-retrieved',
     function (event: any) {
-      console.log('settings-retrieved');
-
-      console.log(event.detail);
+      console.log('settings-retrieved', event.detail);
     },
     false
   );
@@ -90,8 +95,6 @@ gmail.observe.on('load', () => {
   const ids: string[] = [];
 
   console.log('gmail-js loaded!', userEmail);
-
-  const btnInfoClass = 'btn-MyButton';
 
   setInterval(function () {
     if (!jQuery(`[gh="mtb"] .${btnInfoClass}`).length) {
@@ -180,18 +183,18 @@ gmail.observe.on('load', () => {
   gmail.observe.after(
     'send_message',
     async function (url, body, data, response, xhr) {
-      console.log(
-        'send_message. url:',
-        url,
-        'body',
-        body,
-        'email_data',
-        data,
-        'response',
-        response,
-        'xhr',
-        xhr
-      );
+      // console.log(
+      //   'send_message. url:',
+      //   url,
+      //   'body',
+      //   body,
+      //   'email_data',
+      //   data,
+      //   'response',
+      //   response,
+      //   'xhr',
+      //   xhr
+      // );
 
       const emailId = data['1'];
       console.log('Email ID:', emailId);
