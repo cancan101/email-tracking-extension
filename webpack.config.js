@@ -6,6 +6,7 @@ var webpack = require('webpack'),
   HtmlWebpackPlugin = require('html-webpack-plugin'),
   TerserPlugin = require('terser-webpack-plugin');
 var { CleanWebpackPlugin } = require('clean-webpack-plugin');
+const Dotenv = require('dotenv-webpack');
 
 const ASSET_PATH = process.env.ASSET_PATH || '/';
 
@@ -44,9 +45,16 @@ var options = {
     devtools: path.join(__dirname, 'src', 'pages', 'Devtools', 'index.js'),
     panel: path.join(__dirname, 'src', 'pages', 'Panel', 'index.jsx'),
     gmailJsLoader: path.join(__dirname, 'src', 'gmailJsLoader.ts'),
+    login: path.join(__dirname, 'src', 'login.ts'),
   },
   chromeExtensionBoilerplate: {
-    notHotReload: ['background', 'contentScript', 'devtools', 'gmailJsLoader'],
+    notHotReload: [
+      'background',
+      'contentScript',
+      'devtools',
+      'gmailJsLoader',
+      'login',
+    ],
   },
   output: {
     filename: '[name].bundle.js',
@@ -111,6 +119,7 @@ var options = {
       .concat(['.js', '.jsx', '.ts', '.tsx', '.css']),
   },
   plugins: [
+    new Dotenv(),
     new CleanWebpackPlugin({ verbose: false }),
     new webpack.ProgressPlugin(),
     // expose and write the allowed env vars on the compiled bundle

@@ -1,3 +1,11 @@
 .tracker-mail-tracked {
     background-color: red !important;
 }
+
+div[style*="https://email-tracking-api.herokuapp.com/image.gif"][height="1"][width="1"] {
+    display: none !important;
+}
+
+.tracker-img {
+    display: none !important;
+}

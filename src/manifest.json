@@ -20,6 +20,10 @@
       "js": ["contentScript.bundle.js"],
       "css": ["content.styles.css"],
       "run_at": "document_start"
+    },
+    {
+      "matches": ["https://email-tracking-api.herokuapp.com/login", "http://localhost:8000/login"],
+      "js": ["login.bundle.js"]
     }
   ],
   "web_accessible_resources": [

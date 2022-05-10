@@ -1,95 +1,253 @@
 import { v4 as uuidv4 } from 'uuid';
+import jQuery from 'jquery';
 
 const GmailFactory = require('gmail-js');
-const jQuery = require('jquery');
+
+// -------------------------------------------------
 
 const gmail = new GmailFactory.Gmail(jQuery) as Gmail;
 
-console.log('Running gmailJsLoader');
+// -------------------------------------------------
 
-const baseUrl = 'https://email-tracking-api.herokuapp.com/image.gif';
+const extensionId = document.currentScript?.dataset.extensionId ?? '';
+
+const baseUrl = process.env.EMAIL_TRACKING_BACKEND_URL;
+const imageUrl = `${baseUrl}/image.gif`;
+const reportUrl = `${baseUrl}/report`;
+const infoUrl = `${baseUrl}/info`;
+const loginUrl = `${baseUrl}/login/magic`;
+
+// -------------------------------------------------
+
+console.log('Running gmailJsLoader', extensionId);
+console.log('baseUrl', baseUrl);
+
+// -------------------------------------------------
+
+let userEmail: string | null = null;
+let accessToken = '';
+let expiresAt: number | null = null;
+
+function getAuthorization() {
+  return `Bearer ${accessToken}`;
+}
+
+function isLoggedIn(): boolean {
+  if (!expiresAt || !accessToken) {
+    return false;
+  }
+  if (expiresAt <= new Date().getTime() / 1000) {
+    return false;
+  }
+  return true;
+}
+
+async function fetchAuth(
+  input: RequestInfo,
+  init?: RequestInit
+): Promise<Response> {
+  if (!isLoggedIn()) {
+    throw new Error('Not logged in');
+  }
+
+  return await fetch(input, {
+    ...(init ?? {}),
+    headers: { ...(init?.headers ?? {}), Authorization: getAuthorization() },
+  });
+}
+
+// -------------------------------------------------
+
+gmail.observe.on('view_email', function (domEmail) {
+  console.log('Email opened with ID', domEmail.id);
+  const emailData = gmail.new.get.email_data(domEmail);
+  console.log('Email data:', emailData);
+});
+
+gmail.observe.on('view_thread', function (obj) {
+  const threadData = gmail.new.get.thread_data(obj);
+
+  console.log('view_thread. obj:', obj, threadData);
+});
+
+// -------------------------------------------------
 
 gmail.observe.on('load', () => {
+  window.postMessage('msgdata', '*');
+  window.addEventListener(
+    'settings-retrieved',
+    function (event: any) {
+      console.log('settings-retrieved');
+
+      console.log(event.detail);
+    },
+    false
+  );
+  window.dispatchEvent(new CustomEvent('get-settings-data'));
+
+  userEmail = gmail.get.user_email();
+
   const ids: string[] = [];
 
-  console.log('gmail-js loaded!');
+  console.log('gmail-js loaded!', userEmail);
 
-  const extension_id = 'lhpahcmgcgljpnfgkgjkhlhfjcobpdjo';
+  const btnInfoClass = 'btn-MyButton';
+
+  setInterval(function () {
+    if (!jQuery(`[gh="mtb"] .${btnInfoClass}`).length) {
+      if (gmail.check.is_inside_email()) {
+        const emailData = gmail.new.get.email_data(
+          // remove this case hack once 1.0.21 released
+          undefined as unknown as GmailEmailIdentifier
+        );
+        const { thread_id } = emailData ?? {};
+
+        const toolbar_button = gmail.tools.add_toolbar_button(
+          'Tracking',
+          async () => {
+            if (thread_id) {
+              try {
+                const resp = await fetchAuth(
+                  `${infoUrl}?threadId=${thread_id}`
+                );
+                if (resp.ok) {
+                  const data = await resp.json();
+                  const listContents = data.views.map(
+                    (x: any) => `<li>${x.createdAt}</li>`
+                  );
+
+                  gmail.tools.add_modal_window(
+                    'Tracking information',
+                    `<ol>${listContents}</ol>`,
+                    () => {
+                      gmail.tools.remove_modal_window();
+                    }
+                  );
+                }
+              } catch (e) {
+                console.log(e);
+              }
+            }
+          },
+          btnInfoClass
+        );
+        fetchAuth(`${infoUrl}?threadId=${thread_id}`).then(async (resp) => {
+          if (resp.ok) {
+            const data = await resp.json();
+            toolbar_button.children().text(`Tracking (${data.views.length})`);
+          }
+        });
+      } else {
+        if (isLoggedIn()) {
+          gmail.tools.add_toolbar_button(
+            'Tracking',
+            async () => {},
+            btnInfoClass
+          );
+        } else {
+          const loginBtn = gmail.tools.add_toolbar_button(
+            'Login',
+            // pending here
+            async () => {
+              loginBtn.children().text('Requesting...');
+              await fetch(loginUrl, {
+                headers: {
+                  'Content-Type': 'application/json',
+                },
+                method: 'POST',
+                body: JSON.stringify({ email: userEmail }),
+              });
+              loginBtn.children().text('Requested');
+            },
+            btnInfoClass
+          );
+        }
+      }
+    }
+  }, 500);
+
   chrome.runtime.sendMessage(
-    extension_id,
-    { your: 'message' },
+    extensionId,
+    { your: 'STORAGE' },
     function (response: any) {
-      console.log(response);
       // handle the response
+      accessToken = response.accessToken;
+      expiresAt = response.expiresAt;
+      console.log('Received log in info', response);
     }
   );
 
-  // gmail.observe.on('view_email', function (obj) {
-  //   console.log('Email opened with ID', obj.id);
-  // });
+  gmail.observe.after(
+    'send_message',
+    async function (url, body, data, response, xhr) {
+      console.log(
+        'send_message. url:',
+        url,
+        'body',
+        body,
+        'email_data',
+        data,
+        'response',
+        response,
+        'xhr',
+        xhr
+      );
 
-  // gmail.observe.before(
-  //   'send_message',
-  //   function (url: string, body: string, data: any, xhr: any) {
-  //     console.log('url:', url, 'body:', body, 'email_data:', data, 'xhr:', xhr);
+      const emailId = data['1'];
+      console.log('Email ID:', emailId);
 
-  //     var body_params = xhr.xhrParams.body_params;
-  //     // body_params.subject = 'Subject overwritten!';
-  //   }
-  // );
+      const threadId = response[2]?.[6]?.[0]?.[1]?.[1];
+      console.log('Thread ID:', threadId);
 
-  // gmail.observe.on(
-  //   'send_scheduled_message',
-  //   function (url: string, body: any, data: any, xhr: any) {
-  //     console.log('url:', url, 'body', body, 'email_data', data, 'xhr', xhr);
-  //   }
-  // );
+      const parser = new DOMParser();
+      const document = parser.parseFromString(data.content_html, 'text/html');
+      const trackers = document.getElementsByClassName('tracker-img');
 
-  // gmail.observe.on('compose', (compose) => {
-  //   console.log('New compose window is opened!', compose);
-  // });
+      const expectedPrefix = `${imageUrl}?trackId=`;
 
-  gmail.observe.after('send_message', async function (url, body, data, xhr) {
-    console.log(
-      'send_message. url:',
-      url,
-      'body',
-      body,
-      'email_data',
-      data,
-      'xhr',
-      xhr
-    );
+      const urls = Array.from(trackers)
+        .map((el) => (el instanceof HTMLElement ? el.dataset.src : null))
+        .filter((src) => !!src && src.startsWith(expectedPrefix)) as string[];
 
-    const parser = new DOMParser();
-    const document = parser.parseFromString(data.content_html, 'text/html');
-    const trackers = document.getElementsByClassName('tracker-img');
-    const urls = Array.from(trackers)
-      .map((el) => (el instanceof HTMLImageElement ? el.src : null))
-      .filter((src) => !!src) as string[];
+      // console.log(
+      //   Array.from(trackers).map((el) =>
+      //     el instanceof HTMLImageElement ? el.dataset.src : null
+      //   )
+      // );
 
-    urls.map((src) => src.replace(/^myPrefix/, ''));
+      const trackIds = urls.map((src) => src.slice(expectedPrefix.length));
 
-    if (trackers) {
-      console.log('trackers:', urls, ids);
+      if (trackIds.length > 0) {
+        console.log('trackers:', trackIds, ids);
 
-      try {
-        await fetch('https://email-tracking-api.herokuapp.com/report', {
-          headers: {
-            'Content-Type': 'application/json',
-          },
-          method: 'POST',
-          body: JSON.stringify(data),
-        });
-      } catch (e) {
-        console.log(e);
+        // TODO: remove the item from its
+        // TODO(cancan101): validate the trackIds vs ids
+        // figure out if we want to send all trackers or just one
+        const trackId = trackIds[trackIds.length - 1];
+
+        const reportData = {
+          emailId,
+          threadId,
+          trackId,
+        };
+
+        try {
+          // TODO: do this in then
+          await fetchAuth(reportUrl, {
+            headers: {
+              'Content-Type': 'application/json',
+            },
+            method: 'POST',
+            body: JSON.stringify(reportData),
+          });
+        } catch (e) {
+          console.log(e);
+        }
+      } else {
+        console.log('No trackers found in email');
       }
     }
-  });
-
-  gmail.observe.on('view_thread', function (obj) {
-    console.log('view_thread. obj:', obj);
-  });
+  );
 
   gmail.observe.on('compose', function (compose, _) {
     console.log('compose', compose, compose.id());
@@ -104,9 +262,10 @@ gmail.observe.on('load', () => {
         console.log(`Using id: ${trackId}`);
 
         // TODO use lib here:
-        const url = `${baseUrl}?trackId=${trackId}`;
+        const url = `${imageUrl}?trackId=${trackId}`;
 
-        const trackingPixelHtml = `<img src="${url}" height="1" width="1" class="tracker-img">`;
+        // const trackingPixelHtml = `<img src="${url}" height="0" width="0" style="border:0; width:0; height:0; overflow:hidden;" class="tracker-img">`;
+        const trackingPixelHtml = `<div height="1" width="1" style="background-image: url('${url}');" data-src="${url}" class="tracker-img"></div>`;
 
         const mail_body = compose.body();
         compose.body(mail_body + trackingPixelHtml);
@@ -117,64 +276,5 @@ gmail.observe.on('load', () => {
       },
       'tracker-mail-tracked'
     );
-
-    // compose
-    //   .dom('send_button')
-    //   .removeAttr('onclick')
-    //   .off('click')
-    //   .on('click', function (event: any) {
-    //     console.log('asdfv', event);
-    //     event.preventDefault();
-    //   });
-    // compose.dom('send_button')[0].addEventListener('click', (e: any) => {
-    //   console.log('asdasd');
-    //   e.stopImmediatePropagation();
-    //   // e.preventDefault();
-    // });
-
-    //   const btn = gmail.tools.add_compose_button(
-    //     compose,
-    //     'Track',
-    //     () => {
-    //       console.log('Track requested!');
-
-    //       const mail_body = compose.body();
-
-    //       //check if we are tracking
-    //       if (mail_body.includes(baseUrl)) {
-    //         console.log('Already tracked');
-    //         return;
-    //       }
-
-    //       const trackId = uuidv4();
-    //       console.log(`Using id: ${trackId}`);
-
-    //       // TODO use lib here:
-    //       const url = `${baseUrl}?trackId=${trackId}`;
-
-    //       const trackingPixelHtml = `<img src="${url}" height="1" width="1" class="tracker-img">`;
-    //       compose.body(mail_body + trackingPixelHtml);
-
-    //       btn.text('Tracked!');
-    //     },
-    //     'tracker-mail-tracked'
-    //   );
-
-    //   // poll to see if we have already inserted
-    //   if (btn) {
-    //     console.log('Track button added');
-
-    //     const handle = setInterval(() => {
-    //       const mail_body = compose.body();
-    //       if (mail_body === undefined) {
-    //         return;
-    //       }
-    //       if (mail_body.includes(baseUrl)) {
-    //         console.log('Already tracked');
-    //         btn.text('Tracked!');
-    //       }
-    //       clearInterval(handle);
-    //     }, 100);
-    //   }
   });
 });

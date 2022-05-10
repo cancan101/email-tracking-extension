@@ -1,24 +1,27 @@
-import React from 'react';
-import logo from '../../assets/img/logo.svg';
-import Greetings from '../../containers/Greetings/Greetings';
+import React, { useState } from 'react';
 import './Popup.css';
 
 const Popup = () => {
+  const [isLoggingOut, setLoggingOut] = useState(false);
+
   return (
     <div className="App">
       <header className="App-header">
-        <img src={logo} className="App-logo" alt="logo" />
-        <p>
-          Edit <code>src/pages/Popup/Popup.jsx</code> and save to reload.
-        </p>
-        <a
+        <button
           className="App-link"
-          href="https://reactjs.org"
-          target="_blank"
-          rel="noopener noreferrer"
+          disabled={isLoggingOut}
+          onClick={async () => {
+            setLoggingOut(true);
+            chrome.runtime.sendMessage({ your: 'LOG_OUT' });
+            try {
+              await chrome.storage.sync.clear();
+            } catch {
+              // ignore the exception here
+            }
+          }}
         >
-          Learn React!
-        </a>
+          Log out
+        </button>
       </header>
     </div>
   );
