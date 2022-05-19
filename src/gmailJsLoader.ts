@@ -87,6 +87,15 @@ gmail.observe.on('view_thread', function (obj) {
 
 // -------------------------------------------------
 
+// https://web.dev/constructable-stylesheets/
+// const stylesheet = new CSSStyleSheet();
+// stylesheet.insertRule(
+//   '.tracker-mail-tracked { background-color: green !important; }'
+// );
+// document.adoptedStyleSheets = [stylesheet];
+
+// -------------------------------------------------
+
 gmail.observe.on('load', () => {
   // window.addEventListener(
   //   'settings-retrieved',
