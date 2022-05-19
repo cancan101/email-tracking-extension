@@ -246,8 +246,9 @@ gmail.observe.on('load', () => {
       const emailId = data.id;
       console.log('Email ID:', emailId);
 
-      const threadId = response[2]?.[6]?.[0]?.[1]?.[1];
-      console.log('Thread ID:', threadId);
+      // const threadId = response[2]?.[6]?.[0]?.[1]?.[1];
+      const threadId = JSON.parse(body)[2]?.[1]?.[0]?.[2]?.[1];
+      // console.log('Thread ID:', threadId);
 
       const emailSubject = data.subject;
       console.log('emailSubject:', emailSubject);
@@ -320,7 +321,7 @@ gmail.observe.on('load', () => {
         // TODO use lib here:
         const url = `${imageUrl}?trackId=${trackId}`;
 
-        // const trackingPixelHtml = `<img src="${url}" height="0" width="0" style="border:0; width:0; height:0; overflow:hidden;" class="tracker-img">`;
+        // let trackingPixelHtml = `<img src="${url}" loading="lazy" height="0" width="0" style="border:0; width:0; height:0; overflow:hidden; display:none !important;" class="tracker-img">`;
         const trackingPixelHtml = `<div height="1" width="1" style="background-image: url('${url}');" data-src="${url}" class="tracker-img"></div>`;
 
         const mail_body = compose.body();
