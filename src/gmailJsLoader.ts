@@ -112,96 +112,121 @@ gmail.observe.on('load', () => {
 
   console.log('gmail-js loaded!', userEmail);
 
-  setInterval(function () {
-    if (!jQuery(`[gh="mtb"] .${btnInfoClass}`).length) {
-      if (gmail.check.is_inside_email()) {
-        const emailData = gmail.new.get.email_data(
-          // remove this case hack once 1.0.21 released
-          undefined as unknown as GmailEmailIdentifier
-        );
-        const { thread_id } = emailData ?? {};
+  function setupTrackerToolbarForEmail() {
+    const emailData = gmail.new.get.email_data(
+      // remove this case hack once 1.0.21 released
+      undefined as unknown as GmailEmailIdentifier
+    );
+    const { thread_id } = emailData ?? {};
 
-        const toolbar_button = gmail.tools.add_toolbar_button(
-          'Tracking',
-          async () => {
-            if (thread_id) {
-              try {
-                const resp = await fetchAuth(
-                  `${infoUrl}?threadId=${thread_id}`
+    const toolbar_button = gmail.tools.add_toolbar_button(
+      'Tracking',
+      async () => {
+        if (thread_id) {
+          try {
+            const resp = await fetchAuth(`${infoUrl}?threadId=${thread_id}`);
+            if (resp.ok) {
+              const data = await resp.json();
+              const { views } = data;
+              let modalContents;
+
+              if (views) {
+                const listContents = views.map(
+                  (x: any) => `<li>${dayjs(x.createdAt).format('L LT')}</li>`
                 );
-                if (resp.ok) {
-                  const data = await resp.json();
-                  const listContents = data.views.map(
-                    (x: any) => `<li>${x.createdAt}</li>`
-                  );
-
-                  gmail.tools.add_modal_window(
-                    'Tracking information',
-                    `<ol>${listContents.join('')}</ol>`,
-                    () => {
-                      gmail.tools.remove_modal_window();
-                    }
-                  );
-                }
-              } catch (e) {
-                console.log(e);
+                modalContents = `<ol>${listContents.join('')}</ol>`;
+              } else {
+                modalContents = 'No tracking info found for this thread';
               }
+
+              gmail.tools.add_modal_window(
+                'Tracking information',
+                modalContents,
+                () => {
+                  gmail.tools.remove_modal_window();
+                }
+              );
             }
-          },
-          btnInfoClass
-        );
-        fetchAuth(`${infoUrl}?threadId=${thread_id}`).then(async (resp) => {
-          if (resp.ok) {
-            const data = await resp.json();
-            toolbar_button.children().text(`Tracking (${data.views.length})`);
+          } catch (e) {
+            console.log(e);
           }
+        }
+      },
+      btnInfoClass
+    );
+    fetchAuth(`${infoUrl}?threadId=${thread_id}`).then(async (resp) => {
+      if (resp.ok) {
+        const data = await resp.json();
+        const { views } = data;
+        const trackingStats = views != null ? views.length : 'n/a';
+
+        toolbar_button.children().text(`Tracking (${trackingStats})`);
+      }
+    });
+  }
+
+  function setupTrackerToolbarForNotEmail() {
+    gmail.tools.add_toolbar_button(
+      'Tracking',
+      async () => {
+        const resp = await fetchAuth(`${dashboardUrl}?userId=${sub}`);
+        if (resp.ok) {
+          const data = await resp.json();
+
+          const listContents = data.views
+            .slice(0, 10)
+            .map(
+              (x: any) =>
+                `<li>${dayjs(x.createdAt).format('L LT')} (${
+                  x.tracker.emailSubject || x.tracker.threadId
+                })</li>`
+            );
+
+          gmail.tools.add_modal_window(
+            'Tracking information',
+            `<ol>${listContents.join('')}</ol>`,
+            () => {
+              gmail.tools.remove_modal_window();
+            }
+          );
+        }
+      },
+      btnInfoClass
+    );
+  }
+
+  function setupLoginToolbar() {
+    const loginBtn = gmail.tools.add_toolbar_button(
+      'Login',
+      // pending here
+      async () => {
+        loginBtn.children().text('Requesting...');
+        await fetch(loginUrl, {
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          method: 'POST',
+          body: JSON.stringify({ email: userEmail }),
         });
+        loginBtn.children().text('Requested');
+      },
+      btnInfoClass
+    );
+  }
+
+  setInterval(function () {
+    if (jQuery(`[gh="mtb"] .${btnInfoClass}`).length === 0) {
+      if (gmail.check.is_inside_email()) {
+        if (isLoggedIn()) {
+          setupTrackerToolbarForEmail();
+        } else {
+          setupLoginToolbar();
+        }
       } else {
         if (isLoggedIn()) {
-          gmail.tools.add_toolbar_button(
-            'Tracking',
-            async () => {
-              const resp = await fetchAuth(`${dashboardUrl}?userId=${sub}`);
-              if (resp.ok) {
-                const data = await resp.json();
-
-                const listContents = data.views
-                  .slice(0, 10)
-                  .map(
-                    (x: any) =>
-                      `<li>${dayjs(x.createdAt).format('L LT')} (${
-                        x.tracker.emailSubject || x.tracker.threadId
-                      })</li>`
-                  );
-
-                gmail.tools.add_modal_window(
-                  'Tracking information',
-                  `<ol>${listContents.join('')}</ol>`,
-                  () => {
-                    gmail.tools.remove_modal_window();
-                  }
-                );
-              }
-            },
-            btnInfoClass
-          );
+          setupTrackerToolbarForNotEmail();
         } else {
-          const loginBtn = gmail.tools.add_toolbar_button(
-            'Login',
-            // pending here
-            async () => {
-              loginBtn.children().text('Requesting...');
-              await fetch(loginUrl, {
-                headers: {
-                  'Content-Type': 'application/json',
-                },
-                method: 'POST',
-                body: JSON.stringify({ email: userEmail }),
-              });
-              loginBtn.children().text('Requested');
-            },
-            btnInfoClass
-          );
+          setupLoginToolbar();
         }
       }
     }
