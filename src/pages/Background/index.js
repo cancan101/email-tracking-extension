@@ -8,7 +8,14 @@ chrome.runtime.onMessageExternal.addListener(async function (
 ) {
   if (message.your === 'STORAGE') {
     console.log('receive storage');
-    send_response(await chrome.storage.sync.get());
+    let storageData;
+    try {
+      storageData = await chrome.storage.sync.get();
+    } catch {
+      //ignore
+      return;
+    }
+    send_response(storageData);
   }
 });
 
@@ -20,6 +27,8 @@ chrome.runtime.onMessage.addListener(function (request, sender, sendResponse) {
     console.log('receive logout');
     reloadTabs();
   }
+  // https://stackoverflow.com/a/71520415/2638485
+  sendResponse();
 });
 
 function reloadTabs() {

@@ -14,13 +14,19 @@ function processLogin() {
         expiresIn,
         new Date().getTime() / 1000
       );
-      chrome.storage.sync.set({
-        accessToken,
-        expiresAt,
-      });
+
+      chrome.storage.sync
+        .set({
+          accessToken,
+          expiresAt,
+        })
+        .catch((e) => {
+          // ignore
+        });
+      chrome.runtime.sendMessage({ your: 'LOGIN_IN' });
+
       window.location.hash = '';
       window.location.pathname = '/logged-in';
-      chrome.runtime.sendMessage({ your: 'LOGIN_IN' });
     } else {
       console.log('Missing accessToken or expiresIn');
       return;
