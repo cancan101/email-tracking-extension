@@ -7,7 +7,8 @@ chrome.runtime.onMessageExternal.addListener(async function (
   send_response
 ) {
   if (message.your === 'STORAGE') {
-    console.log('receive storage');
+    const { emailAccount } = message;
+    console.log('receive storage', emailAccount);
     let storageData;
     try {
       storageData = await chrome.storage.sync.get();
@@ -15,7 +16,10 @@ chrome.runtime.onMessageExternal.addListener(async function (
       //ignore
       return;
     }
-    send_response(storageData);
+    const accountEntry = storageData[emailAccount];
+    if (accountEntry) {
+      send_response(accountEntry);
+    }
   }
 });
 

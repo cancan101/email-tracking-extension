@@ -209,7 +209,7 @@ gmail.observe.on('load', () => {
 
   chrome.runtime.sendMessage(
     extensionId,
-    { your: 'STORAGE' },
+    { your: 'STORAGE', emailAccount: userEmail },
     function (response: any) {
       // handle the response
       accessToken = response.accessToken;
