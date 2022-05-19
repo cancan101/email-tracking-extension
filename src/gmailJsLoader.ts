@@ -238,6 +238,11 @@ gmail.observe.on('load', () => {
       //   xhr
       // );
 
+      if (xhr.readyState === 4 && xhr.status === 0) {
+        console.log('Issue with send');
+        return;
+      }
+
       const emailId = data.id;
       console.log('Email ID:', emailId);
 
@@ -300,6 +305,8 @@ gmail.observe.on('load', () => {
 
   gmail.observe.on('compose', function (compose, _) {
     console.log('compose', compose, compose.id());
+
+    // TODO(cancan101): figure out if the window is re-opened due to a failed send
 
     gmail.tools.add_compose_button(
       compose,
