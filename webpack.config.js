@@ -145,7 +145,7 @@ var options = {
 
             const manifestContents = content
               .toString()
-              .replace(
+              .replaceAll(
                 '__EMAIL_TRACKING_BACKEND_URL__',
                 process.env.EMAIL_TRACKING_BACKEND_URL
               );
@@ -171,7 +171,7 @@ var options = {
             return Buffer.from(
               content
                 .toString()
-                .replace(
+                .replaceAll(
                   '__EMAIL_TRACKING_BACKEND_URL__',
                   process.env.EMAIL_TRACKING_BACKEND_URL
                 )
