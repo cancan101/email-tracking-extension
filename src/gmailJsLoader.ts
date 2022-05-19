@@ -299,10 +299,17 @@ gmail.observe.on('load', () => {
       if (trackIds.length > 0) {
         console.log('trackers:', trackIds, ids);
 
-        // TODO: remove the item from its
-        // TODO(cancan101): validate the trackIds vs ids
         // figure out if we want to send all trackers or just one
         const trackId = trackIds[trackIds.length - 1];
+        const trackIdIdx = ids.indexOf(trackId);
+
+        console.log('trackId:', trackId, 'trackIdIdx', trackIdIdx);
+
+        if (trackIdIdx >= 0) {
+          ids.splice(trackIdIdx, 1);
+        } else {
+          throw Error('Unknown trackerId');
+        }
 
         const reportData = {
           emailId,
