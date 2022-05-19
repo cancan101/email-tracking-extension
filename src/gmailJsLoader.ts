@@ -96,6 +96,8 @@ gmail.observe.on('view_thread', function (obj) {
 
 // -------------------------------------------------
 
+const ids: string[] = [];
+
 gmail.observe.on('load', () => {
   // window.addEventListener(
   //   'settings-retrieved',
@@ -107,8 +109,6 @@ gmail.observe.on('load', () => {
   // window.dispatchEvent(new CustomEvent('get-settings-data'));
 
   userEmail = gmail.get.user_email();
-
-  const ids: string[] = [];
 
   console.log('gmail-js loaded!', userEmail);
 
@@ -328,36 +328,36 @@ gmail.observe.on('load', () => {
       }
     }
   );
+});
 
-  gmail.observe.on('compose', function (compose, _) {
-    console.log('compose', compose, compose.id());
+gmail.observe.on('compose', function (compose, _) {
+  console.log('compose', compose, compose.id());
 
-    // TODO(cancan101): figure out if the window is re-opened due to a failed send
+  // TODO(cancan101): figure out if the window is re-opened due to a failed send
 
-    gmail.tools.add_compose_button(
-      compose,
-      'Track',
-      () => {
-        console.log('Track requested!');
+  gmail.tools.add_compose_button(
+    compose,
+    'Track',
+    () => {
+      console.log('Track requested!');
 
-        const trackId = uuidv4();
-        console.log(`Using id: ${trackId}`);
+      const trackId = uuidv4();
+      console.log(`Using id: ${trackId}`);
 
-        // TODO use lib here:
-        const url = `${imageUrl}?trackId=${trackId}`;
+      // TODO use lib here:
+      const url = `${imageUrl}?trackId=${trackId}`;
 
-        // let trackingPixelHtml = `<img src="${url}" loading="lazy" height="0" width="0" style="border:0; width:0; height:0; overflow:hidden; display:none !important;" class="tracker-img">`;
-        const trackingPixelHtml = `<div height="1" width="1" style="background-image: url('${url}');" data-src="${url}" class="tracker-img"></div>`;
+      // let trackingPixelHtml = `<img src="${url}" loading="lazy" height="0" width="0" style="border:0; width:0; height:0; overflow:hidden; display:none !important;" class="tracker-img">`;
+      const trackingPixelHtml = `<div height="1" width="1" style="background-image: url('${url}');" data-src="${url}" class="tracker-img"></div>`;
 
-        const mail_body = compose.body();
-        // TODO(cancan101): remove old trackers
-        compose.body(mail_body + trackingPixelHtml);
+      const mail_body = compose.body();
+      // TODO(cancan101): remove old trackers
+      compose.body(mail_body + trackingPixelHtml);
 
-        ids.push(trackId);
+      ids.push(trackId);
 
-        compose.send();
-      },
-      'tracker-mail-tracked'
-    );
-  });
+      compose.send();
+    },
+    'tracker-mail-tracked'
+  );
 });
