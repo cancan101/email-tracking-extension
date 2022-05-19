@@ -1,10 +1,14 @@
 import { v4 as uuidv4 } from 'uuid';
 import jQuery from 'jquery';
 import { decodeJwt } from 'jose';
+import dayjs from 'dayjs';
+import localizedFormat from 'dayjs/plugin/localizedFormat';
 
 // import style required for TS to work
 const GmailFactory = require('gmail-js');
 
+// -------------------------------------------------
+dayjs.extend(localizedFormat);
 // -------------------------------------------------
 
 // required to make TS happy
@@ -152,12 +156,14 @@ gmail.observe.on('load', () => {
               if (resp.ok) {
                 const data = await resp.json();
 
-                const listContents = data.views.map(
-                  (x: any) =>
-                    `<li>${x.createdAt} (${
-                      x.tracker.emailSubject || x.tracker.threadId
-                    })</li>`
-                );
+                const listContents = data.views
+                  .slice(0, 10)
+                  .map(
+                    (x: any) =>
+                      `<li>${dayjs(x.createdAt).format('L LT')} (${
+                        x.tracker.emailSubject || x.tracker.threadId
+                      })</li>`
+                  );
 
                 gmail.tools.add_modal_window(
                   'Tracking information',
