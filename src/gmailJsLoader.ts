@@ -224,7 +224,7 @@ gmail.observe.on('load', () => {
 
   gmail.observe.after(
     'send_message',
-    async function (url, body, data, response, xhr) {
+    async function (url, body, data, response, xhr): Promise<void> {
       // console.log(
       //   'send_message. url:',
       //   url,
