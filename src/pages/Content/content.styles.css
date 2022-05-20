@@ -2,6 +2,10 @@
     background-color: red !important;
 }
 
+div[style*="__EMAIL_TRACKING_BACKEND_URL__/t/"][style*="image.gif"][height="1"][width="1"] {
+    display: none !important;
+}
+
 div[style*="__EMAIL_TRACKING_BACKEND_URL__/image.gif"][height="1"][width="1"] {
     display: none !important;
 }

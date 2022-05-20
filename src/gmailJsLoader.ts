@@ -20,7 +20,7 @@ const extensionId = document.currentScript?.dataset.extensionId ?? '';
 // TODO(cancan101): handle missing extensionId
 
 const baseUrl = process.env.EMAIL_TRACKING_BACKEND_URL;
-const imageUrl = `${baseUrl}/image.gif`;
+const imageBaseUrl = `${baseUrl}/t`;
 const reportUrl = `${baseUrl}/report`;
 const infoUrl = `${baseUrl}/info`;
 const dashboardUrl = `${baseUrl}/dashboard`;
@@ -39,9 +39,10 @@ console.log(
 // TODO(cancan101): use proper state system
 let userEmail: string | null = null;
 // TODO(cancan101): should we allow this to be null?
-let accessToken = '';
+let accessToken: string | null = null;
 // TODO(cancan101): should we use another sentinel value like 0?
 let expiresAt: number | null = null;
+let trackingSlug: string | null = null;
 let sub: string | null = null;
 
 function getAuthorization(): string {
@@ -215,7 +216,8 @@ gmail.observe.on('load', () => {
   }
 
   setInterval(function () {
-    if (jQuery(`[gh="mtb"] .${btnInfoClass}`).length === 0) {
+    const buttons = jQuery(`[gh="mtb"] .${btnInfoClass}`);
+    if (buttons.length === 0) {
       if (gmail.check.is_inside_email()) {
         if (isLoggedIn()) {
           setupTrackerToolbarForEmail();
@@ -229,6 +231,11 @@ gmail.observe.on('load', () => {
           setupLoginToolbar();
         }
       }
+    } else {
+      // https://github.com/KartikTalwar/gmail.js/issues/518#issuecomment-1132242028
+      if (!gmail.check.is_inside_email()) {
+        buttons.parent().attr('style', '');
+      }
     }
   }, 500);
 
@@ -237,8 +244,9 @@ gmail.observe.on('load', () => {
     { your: 'STORAGE', emailAccount: userEmail },
     function (response: any) {
       // handle the response
-      accessToken = response.accessToken;
-      expiresAt = response.expiresAt;
+      accessToken = response.accessToken as string;
+      expiresAt = response.expiresAt as number;
+      trackingSlug = response.trackingSlug as string;
 
       const claims = decodeJwt(accessToken);
       sub = claims.sub ?? null;
@@ -282,11 +290,9 @@ gmail.observe.on('load', () => {
       const document = parser.parseFromString(data.content_html, 'text/html');
       const trackers = document.getElementsByClassName('tracker-img');
 
-      const expectedPrefix = `${imageUrl}?trackId=`;
-
       const urls = Array.from(trackers)
         .map((el) => (el instanceof HTMLElement ? el.dataset.src : null))
-        .filter((src) => !!src && src.startsWith(expectedPrefix)) as string[];
+        .filter((src) => !!src && src.startsWith(imageBaseUrl)) as string[];
 
       // console.log(
       //   Array.from(trackers).map((el) =>
@@ -294,7 +300,10 @@ gmail.observe.on('load', () => {
       //   )
       // );
 
-      const trackIds = urls.map((src) => src.slice(expectedPrefix.length));
+      // 38 is length of uuid
+      const trackIds = urls.map((src) =>
+        src.slice(imageBaseUrl.length + 38, -'image.gif'.length - 1)
+      );
 
       if (trackIds.length > 0) {
         console.log('trackers:', trackIds, ids);
@@ -352,7 +361,7 @@ gmail.observe.on('compose', function (compose, _) {
       console.log(`Using id: ${trackId}`);
 
       // TODO use lib here:
-      const url = `${imageUrl}?trackId=${trackId}`;
+      const url = `${imageBaseUrl}/${trackingSlug}/${trackId}/image.gif`;
 
       // let trackingPixelHtml = `<img src="${url}" loading="lazy" height="0" width="0" style="border:0; width:0; height:0; overflow:hidden; display:none !important;" class="tracker-img">`;
       const trackingPixelHtml = `<div height="1" width="1" style="background-image: url('${url}');" data-src="${url}" class="tracker-img"></div>`;

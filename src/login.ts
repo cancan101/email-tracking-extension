@@ -9,8 +9,9 @@ function processLogin() {
     const accessToken = data.get('accessToken');
     const expiresInStr = data.get('expiresIn');
     const emailAccount = data.get('emailAccount');
+    const trackingSlug = data.get('trackingSlug');
 
-    if (accessToken && expiresInStr && emailAccount) {
+    if (accessToken && expiresInStr && emailAccount && trackingSlug) {
       const expiresIn = parseInt(expiresInStr, 10);
       const expiresAt = new Date().getTime() / 1000 + expiresIn;
       console.log(
@@ -18,7 +19,7 @@ function processLogin() {
         emailAccount,
         expiresAt,
         expiresIn,
-        new Date().getTime() / 1000
+        trackingSlug
       );
 
       chrome.storage.sync
@@ -26,12 +27,13 @@ function processLogin() {
           [emailAccount]: {
             accessToken,
             expiresAt,
+            trackingSlug,
           },
         })
         .catch((e) => {
           // ignore
         });
-      chrome.runtime.sendMessage({ your: 'LOGIN_IN' });
+      chrome.runtime.sendMessage({ your: 'LOGIN_IN', emailAccount });
 
       window.location.hash = '';
       window.location.pathname = '/logged-in';
