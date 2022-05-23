@@ -9,9 +9,11 @@ function ThreadViewListItem({ view }: { view: any }) {
   );
 }
 
-export default function ThreadViewList({ views }: { views: any[] }) {
-  if (views.length === 0) {
+export default function ThreadViewList({ views }: { views: any[] | null }) {
+  if (views === null) {
     return <div>No tracking info found for this thread</div>;
+  } else if (views.length === 0) {
+    return <div>No views yet for this thread</div>;
   }
   return (
     <ol>
