@@ -3,6 +3,11 @@ import jQuery from 'jquery';
 import { decodeJwt } from 'jose';
 import dayjs from 'dayjs';
 import localizedFormat from 'dayjs/plugin/localizedFormat';
+import React from 'react';
+import { render } from 'react-dom';
+
+import InboxViewList from './containers/InboxViewList';
+import ThreadViewList from './components/ThreadViewList';
 
 // import style required for TS to work
 const GmailFactory = require('gmail-js');
@@ -129,23 +134,13 @@ gmail.observe.on('load', () => {
             if (resp.ok) {
               const data = await resp.json();
               const { views } = data;
-              let modalContents;
 
-              if (views) {
-                const listContents = views.map(
-                  (x: any) => `<li>${dayjs(x.createdAt).format('L LT')}</li>`
-                );
-                modalContents = `<ol>${listContents.join('')}</ol>`;
-              } else {
-                modalContents = 'No tracking info found for this thread';
-              }
-
-              gmail.tools.add_modal_window(
-                'Tracking information',
-                modalContents,
-                () => {
-                  gmail.tools.remove_modal_window();
-                }
+              gmail.tools.add_modal_window('Tracking information', '', () => {
+                gmail.tools.remove_modal_window();
+              });
+              render(
+                React.createElement(ThreadViewList, { views }, null),
+                jQuery('#gmailJsModalWindowContent')[0]
               );
             }
           } catch (e) {
@@ -173,22 +168,19 @@ gmail.observe.on('load', () => {
         const resp = await fetchAuth(`${dashboardUrl}?userId=${sub}`);
         if (resp.ok) {
           const data = await resp.json();
+          const allViews = data.views as any[];
+          const views = allViews.slice(0, 10);
 
-          const listContents = data.views
-            .slice(0, 10)
-            .map(
-              (x: any) =>
-                `<li>${dayjs(x.createdAt).format('L LT')} (${
-                  x.tracker.emailSubject || x.tracker.threadId
-                })</li>`
-            );
-
-          gmail.tools.add_modal_window(
-            'Tracking information',
-            `<ol>${listContents.join('')}</ol>`,
-            () => {
-              gmail.tools.remove_modal_window();
-            }
+          gmail.tools.add_modal_window('Tracking information', '', () => {
+            gmail.tools.remove_modal_window();
+          });
+          render(
+            React.createElement(
+              InboxViewList,
+              { views, closeModal: gmail.tools.remove_modal_window },
+              null
+            ),
+            jQuery('#gmailJsModalWindowContent')[0]
           );
         }
       },
