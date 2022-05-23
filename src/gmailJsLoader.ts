@@ -7,7 +7,7 @@ import React from 'react';
 import { render } from 'react-dom';
 
 import InboxViewList from './containers/InboxViewList';
-import ThreadViewList from './components/ThreadViewList';
+import ThreadViewList from './containers/ThreadViewList';
 
 // import style required for TS to work
 const GmailFactory = require('gmail-js');

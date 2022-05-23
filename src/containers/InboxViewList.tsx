@@ -1,6 +1,6 @@
 import React from 'react';
 import FormatView from './FormatView';
-import { GmailUrlDecoder } from './GmailUrlDecoder';
+import { GmailUrlDecoder } from '../utils/GmailUrlDecoder';
 
 function InboxViewListItem({
   view,
