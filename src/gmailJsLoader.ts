@@ -11,7 +11,7 @@ import ThreadViewList from './containers/ThreadViewList';
 import LoginButton from './containers/LoginButton';
 import TrackingButton from './containers/TrackingButton';
 import ThreadTrackingButton from './containers/ThreadTrackingButton';
-import useStore, { stateIsLoggedIn } from './containers/store';
+import useStore from './containers/store';
 import { View } from './types';
 
 // import style required for TS to work
@@ -50,8 +50,8 @@ console.log(
 // -------------------------------------------------
 
 function getAuthorization(): string | null {
-  const accessToken = useStore.getState().userInfo?.accessToken;
-  if (accessToken === undefined) {
+  const accessToken = useStore.getState().getValidAccessToken();
+  if (accessToken === null) {
     return null;
   }
   return `Bearer ${accessToken}`;
@@ -61,10 +61,6 @@ async function fetchAuth(
   input: RequestInfo,
   init?: RequestInit
 ): Promise<Response> {
-  if (!stateIsLoggedIn(useStore.getState())) {
-    throw new Error('Not logged in');
-  }
-
   const authorization = getAuthorization();
   if (authorization === null) {
     throw new Error('Not logged in');

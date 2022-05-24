@@ -11,9 +11,11 @@ type Store = {
   isInsideEmail: boolean;
   userEmail: string | null;
   userInfo: UserInfo | null;
+  isLoggedIn: () => boolean;
+  getValidAccessToken: () => string | null;
 };
 
-export function stateIsLoggedIn(state: Store): boolean {
+function stateIsLoggedIn(state: Store): boolean {
   const { userInfo } = state;
   if (userInfo === null) {
     return false;
@@ -26,10 +28,18 @@ export function stateIsLoggedIn(state: Store): boolean {
   return true;
 }
 
-const useStore = create<Store>((set) => ({
+const useStore = create<Store>((set, get) => ({
   isInsideEmail: false,
   userEmail: null,
   userInfo: null,
+  isLoggedIn: () => stateIsLoggedIn(get()),
+  getValidAccessToken: () => {
+    const userInfo = get().userInfo;
+    if (!get().isLoggedIn() || userInfo === null) {
+      return null;
+    }
+    return userInfo.accessToken;
+  },
 }));
 
 export default useStore;
