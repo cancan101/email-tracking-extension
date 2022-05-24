@@ -1,14 +1,15 @@
 import React, { useEffect, useState } from 'react';
 import useStore from './store';
+import { View } from '../types';
 
 export default function ThreadTrackingButton({
   getThreadViews,
   showThreadViews,
 }: {
-  getThreadViews: () => Promise<any[] | null>;
-  showThreadViews: (views: any[] | null) => void;
+  getThreadViews: () => Promise<View[] | null>;
+  showThreadViews: (views: View[] | null) => void;
 }) {
-  const [views, setViews] = useState<any[] | null | undefined>(undefined);
+  const [views, setViews] = useState<View[] | null | undefined>(undefined);
   const isLoggedIn = useStore((state) => state.isLoggedIn);
 
   useEffect(() => {

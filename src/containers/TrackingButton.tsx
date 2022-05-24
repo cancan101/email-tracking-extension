@@ -2,19 +2,22 @@ import React, { useEffect, useState } from 'react';
 import dayjs from 'dayjs';
 import relativeTime from 'dayjs/plugin/relativeTime';
 import useStore from './store';
+import { View } from '../types';
 
+// -------------------------------------------------
 dayjs.extend(relativeTime);
+// -------------------------------------------------
 
 export default function TrackingButton({
   getUserViews,
   renderTrackingInfo,
 }: {
-  getUserViews: () => Promise<any[] | null>;
-  renderTrackingInfo: (views: any[]) => void;
+  getUserViews: () => Promise<View[] | null>;
+  renderTrackingInfo: (views: View[]) => void;
 }) {
   const isLoggedIn = useStore((state) => state.isLoggedIn);
   const isInsideEmail = useStore((state) => state.isInsideEmail);
-  const [views, setViews] = useState<any[] | null | undefined>(undefined);
+  const [views, setViews] = useState<View[] | null | undefined>(undefined);
 
   const onClick = () => {
     if (views != null) {

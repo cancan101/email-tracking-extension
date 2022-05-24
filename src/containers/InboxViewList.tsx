@@ -1,12 +1,13 @@
 import React from 'react';
 import FormatView from './FormatView';
 import { GmailUrlDecoder } from '../utils/GmailUrlDecoder';
+import { View } from '../types';
 
 function InboxViewListItem({
   view,
   closeModal,
 }: {
-  view: any;
+  view: View;
   closeModal: Function;
 }) {
   return (
@@ -28,7 +29,7 @@ export default function InboxViewList({
   views,
   closeModal,
 }: {
-  views: any[];
+  views: View[];
   closeModal: Function;
 }) {
   return (

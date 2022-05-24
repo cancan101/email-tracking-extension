@@ -12,6 +12,7 @@ import LoginButton from './containers/LoginButton';
 import TrackingButton from './containers/TrackingButton';
 import ThreadTrackingButton from './containers/ThreadTrackingButton';
 import useStore from './containers/store';
+import { View } from './types';
 
 // import style required for TS to work
 const GmailFactory = require('gmail-js');
@@ -93,7 +94,7 @@ gmail.observe.on('view_email', function (domEmail) {
   console.log('Email data:', emailData);
 });
 
-const showThreadViews = (views: any[] | null) => {
+const showThreadViews = (views: View[] | null) => {
   gmail.tools.add_modal_window('Tracking information', '', () => {
     gmail.tools.remove_modal_window();
   });
@@ -104,7 +105,7 @@ const showThreadViews = (views: any[] | null) => {
   );
 };
 
-const getThreadViews = async (threadId: string): Promise<any[] | null> => {
+const getThreadViews = async (threadId: string): Promise<View[] | null> => {
   try {
     const resp = await fetchAuth(`${infoUrl}?threadId=${threadId}`);
     if (resp.ok) {
@@ -246,7 +247,7 @@ gmail.observe.on('load', () => {
     setupLogin();
   }, 500);
 
-  function renderTrackingInfo(views: any[]) {
+  function renderTrackingInfo(views: View[]) {
     gmail.tools.add_modal_window('Tracking information', '', () => {
       gmail.tools.remove_modal_window();
     });
@@ -261,12 +262,14 @@ gmail.observe.on('load', () => {
     );
   }
 
-  async function getUserViews(): Promise<any[] | null> {
+  async function getUserViews(): Promise<View[] | null> {
     const resp = await fetchAuth(`${dashboardUrl}?userId=${sub}`);
     if (resp.ok) {
       const data = await resp.json();
-      const allViews = data.views as any[];
-      return allViews.slice(0, 10);
+      if (data.views !== null) {
+        const allViews = data.views as View[];
+        return allViews.slice(0, 10);
+      }
     }
     return null;
   }
@@ -323,6 +326,7 @@ gmail.observe.on('load', () => {
       if (inFutureMs >= 0) {
         console.log('Will expire in:', inFutureMs);
         setTimeout(() => {
+          console.log('Setting isLoggedIn to', isLoggedIn());
           useStore.setState({ isLoggedIn: isLoggedIn() });
         }, expiresAt);
       }
