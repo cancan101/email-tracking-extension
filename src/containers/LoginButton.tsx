@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import useStore from './store';
+import useStore, { stateIsLoggedIn } from './store';
 
 type LoginState = 'UNREQUESTED' | 'REQUESTING' | 'REQUESTED';
 
@@ -9,7 +9,7 @@ export default function LoginButton({
   requestLogin: () => Promise<void>;
 }): React.ReactElement {
   const [loginState, setLoginState] = useState<LoginState>('UNREQUESTED');
-  const isLoggedIn = useStore((state) => state.isLoggedIn);
+  const isLoggedIn = useStore(stateIsLoggedIn);
 
   let label: string;
   if (loginState === 'REQUESTING') {

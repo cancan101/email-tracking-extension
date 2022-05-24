@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import useStore from './store';
+import useStore, { stateIsLoggedIn } from './store';
 import { View } from '../types';
 
 export default function ThreadTrackingButton({
@@ -10,7 +10,7 @@ export default function ThreadTrackingButton({
   showThreadViews: (views: View[] | null) => void;
 }) {
   const [views, setViews] = useState<View[] | null | undefined>(undefined);
-  const isLoggedIn = useStore((state) => state.isLoggedIn);
+  const isLoggedIn = useStore(stateIsLoggedIn);
 
   useEffect(() => {
     if (isLoggedIn) {

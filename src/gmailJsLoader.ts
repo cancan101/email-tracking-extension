@@ -11,7 +11,7 @@ import ThreadViewList from './containers/ThreadViewList';
 import LoginButton from './containers/LoginButton';
 import TrackingButton from './containers/TrackingButton';
 import ThreadTrackingButton from './containers/ThreadTrackingButton';
-import useStore from './containers/store';
+import useStore, { stateIsLoggedIn } from './containers/store';
 import { View } from './types';
 
 // import style required for TS to work
@@ -49,40 +49,30 @@ console.log(
 
 // -------------------------------------------------
 
-// TODO(cancan101): use proper state system
-let userEmail: string | null = null;
-// TODO(cancan101): should we allow this to be null?
-let accessToken: string | null = null;
-// TODO(cancan101): should we use another sentinel value like 0?
-let expiresAt: number | null = null;
-let trackingSlug: string | null = null;
-let sub: string | null = null;
-
-function getAuthorization(): string {
+function getAuthorization(): string | null {
+  const accessToken = useStore.getState().userInfo?.accessToken;
+  if (accessToken === undefined) {
+    return null;
+  }
   return `Bearer ${accessToken}`;
-}
-
-function isLoggedIn(): boolean {
-  if (!expiresAt || !accessToken) {
-    return false;
-  }
-  if (expiresAt <= new Date().getTime() / 1000) {
-    return false;
-  }
-  return true;
 }
 
 async function fetchAuth(
   input: RequestInfo,
   init?: RequestInit
 ): Promise<Response> {
-  if (!isLoggedIn()) {
+  if (!stateIsLoggedIn(useStore.getState())) {
+    throw new Error('Not logged in');
+  }
+
+  const authorization = getAuthorization();
+  if (authorization === null) {
     throw new Error('Not logged in');
   }
 
   return await fetch(input, {
     ...(init ?? {}),
-    headers: { ...(init?.headers ?? {}), Authorization: getAuthorization() },
+    headers: { ...(init?.headers ?? {}), Authorization: authorization },
   });
 }
 
@@ -198,7 +188,8 @@ gmail.observe.on('load', () => {
   // );
   // window.dispatchEvent(new CustomEvent('get-settings-data'));
 
-  userEmail = gmail.get.user_email();
+  const userEmail = gmail.get.user_email();
+  useStore.setState({ userEmail });
 
   console.log('gmail-js loaded!', userEmail);
 
@@ -263,7 +254,11 @@ gmail.observe.on('load', () => {
   }
 
   async function getUserViews(): Promise<View[] | null> {
-    const resp = await fetchAuth(`${dashboardUrl}?userId=${sub}`);
+    const userId = useStore.getState().userInfo?.userId;
+    if (userId === undefined) {
+      throw new Error('No userId');
+    }
+    const resp = await fetchAuth(`${dashboardUrl}?userId=${userId}`);
     if (resp.ok) {
       const data = await resp.json();
       if (data.views !== null) {
@@ -310,24 +305,30 @@ gmail.observe.on('load', () => {
   chrome.runtime.sendMessage(
     extensionId,
     { your: 'STORAGE', emailAccount: userEmail },
-    function (response: any) {
+    function (response: any): void {
       // handle the response
-      accessToken = response.accessToken as string;
-      expiresAt = response.expiresAt as number;
-      trackingSlug = response.trackingSlug as string;
+      const accessToken = response.accessToken as string;
+      const expiresAt = response.expiresAt as number;
+      const trackingSlug = response.trackingSlug as string;
 
       const claims = decodeJwt(accessToken);
-      sub = claims.sub ?? null;
+      if (!claims.sub) {
+        console.log('Missing sub claim');
+        return;
+      }
+      const sub = claims.sub;
 
       console.log('Received log in info', response, sub);
-      useStore.setState({ isLoggedIn: isLoggedIn() });
+      useStore.setState({
+        userInfo: { accessToken, expiresAt, trackingSlug, userId: sub },
+      });
 
       const inFutureMs = expiresAt * 1000 - new Date().getTime() + 100;
       if (inFutureMs >= 0) {
         console.log('Will expire in:', inFutureMs);
         setTimeout(() => {
-          console.log('Setting isLoggedIn to', isLoggedIn());
-          useStore.setState({ isLoggedIn: isLoggedIn() });
+          console.log('Clearing userInfo');
+          useStore.setState({ userInfo: null });
         }, expiresAt);
       }
     }
@@ -437,6 +438,11 @@ gmail.observe.on('compose', function (compose, _) {
 
       const trackId = uuidv4();
       console.log(`Using id: ${trackId}`);
+
+      const trackingSlug = useStore.getState().userInfo?.trackingSlug;
+      if (trackingSlug === undefined) {
+        throw new Error('No trackingSlug');
+      }
 
       // TODO use lib here:
       const url = `${imageBaseUrl}/${trackingSlug}/${trackId}/image.gif`;
