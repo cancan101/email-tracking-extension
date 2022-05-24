@@ -5,7 +5,7 @@ const loginUrl = `${baseUrl}/login/magic`;
 
 type LoginState = 'UNREQUESTED' | 'REQUESTING' | 'REQUESTED';
 
-export default function Login({
+export default function LoginButton({
   userEmail,
   loggedIn,
 }: {
