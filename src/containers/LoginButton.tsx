@@ -1,15 +1,15 @@
 import React, { useState } from 'react';
+import useStore from './store';
 
 type LoginState = 'UNREQUESTED' | 'REQUESTING' | 'REQUESTED';
 
 export default function LoginButton({
-  isLoggedIn,
   requestLogin,
 }: {
-  isLoggedIn: boolean;
   requestLogin: () => Promise<void>;
 }): React.ReactElement {
   const [loginState, setLoginState] = useState<LoginState>('UNREQUESTED');
+  const isLoggedIn = useStore((state) => state.isLoggedIn);
 
   let label: string;
   if (loginState === 'REQUESTING') {

@@ -1,15 +1,15 @@
 import React, { useEffect, useState } from 'react';
+import useStore from './store';
 
 export default function ThreadTrackingButton({
   getThreadViews,
   showThreadViews,
-  isLoggedIn,
 }: {
   getThreadViews: () => Promise<any[] | null>;
   showThreadViews: (views: any[] | null) => void;
-  isLoggedIn: boolean;
 }) {
   const [views, setViews] = useState<any[] | null | undefined>(undefined);
+  const isLoggedIn = useStore((state) => state.isLoggedIn);
 
   useEffect(() => {
     if (isLoggedIn) {

@@ -11,6 +11,7 @@ import ThreadViewList from './containers/ThreadViewList';
 import LoginButton from './containers/LoginButton';
 import TrackingButton from './containers/TrackingButton';
 import ThreadTrackingButton from './containers/ThreadTrackingButton';
+import useStore from './containers/store';
 
 // import style required for TS to work
 const GmailFactory = require('gmail-js');
@@ -129,6 +130,8 @@ gmail.observe.on('view_thread', function (obj) {
       console.log('view_thread. obj:', obj, threadId, threadData);
 
       setTimeout(() => {
+        useStore.setState({ isInsideEmail: true });
+
         const btnTrackingThread = gmail.tools.add_toolbar_button(
           null as any as string,
           null as any as Function,
@@ -136,6 +139,7 @@ gmail.observe.on('view_thread', function (obj) {
         );
         btnTrackingThread.children().off('click');
         const btnTrackingThreadBtnContainer = document.createElement('div');
+        // can we de-jquery some
         jQuery(btnTrackingThread.children()[0]).append(
           jQuery(btnTrackingThreadBtnContainer)
         );
@@ -145,7 +149,6 @@ gmail.observe.on('view_thread', function (obj) {
           {
             getThreadViews: () => getThreadViews(threadId),
             showThreadViews,
-            isLoggedIn: isLoggedIn(),
           },
           null
         );
@@ -220,6 +223,15 @@ gmail.observe.on('load', () => {
       );
       container.children().off('click');
       jQuery(container.children()[0]).append(jQuery(loginBtnContainer));
+
+      const loginButtonElement = React.createElement(
+        LoginButton,
+        {
+          requestLogin,
+        },
+        null
+      );
+      render(loginButtonElement, loginBtnContainer);
     } else if (buttons.parent().attr('style') != null) {
       // https://github.com/KartikTalwar/gmail.js/issues/518#issuecomment-1132242028
       buttons.parent().attr('style', null);
@@ -227,16 +239,6 @@ gmail.observe.on('load', () => {
       // we have to re-attach the container
       buttons.append(jQuery(loginBtnContainer));
     }
-    const loginButtonElement = React.createElement(
-      LoginButton,
-      {
-        userEmail: userEmail as string,
-        isLoggedIn: isLoggedIn(),
-        requestLogin,
-      },
-      null
-    );
-    render(loginButtonElement, loginBtnContainer);
   }
 
   setInterval(function () {
@@ -281,6 +283,16 @@ gmail.observe.on('load', () => {
       );
       container.children().off('click');
       jQuery(container.children()[0]).append(jQuery(trackingBtnContainer));
+
+      const trackingButtonElement = React.createElement(
+        TrackingButton,
+        {
+          getUserViews,
+          renderTrackingInfo,
+        },
+        null
+      );
+      render(trackingButtonElement, trackingBtnContainer);
     } else if (buttons.parent().attr('style') != null) {
       // https://github.com/KartikTalwar/gmail.js/issues/518#issuecomment-1132242028
       buttons.parent().attr('style', null);
@@ -288,17 +300,8 @@ gmail.observe.on('load', () => {
       // we have to re-attach the container
       buttons.append(jQuery(trackingBtnContainer));
     }
-    const trackingButtonElement = React.createElement(
-      TrackingButton,
-      {
-        getUserViews,
-        renderTrackingInfo,
-        isInsideEmail: gmail.check.is_inside_email(),
-        isLoggedIn: isLoggedIn(),
-      },
-      null
-    );
-    render(trackingButtonElement, trackingBtnContainer);
+    // maybe move
+    useStore.setState({ isInsideEmail: gmail.check.is_inside_email() });
   }
 
   chrome.runtime.sendMessage(
@@ -314,6 +317,15 @@ gmail.observe.on('load', () => {
       sub = claims.sub ?? null;
 
       console.log('Received log in info', response, sub);
+      useStore.setState({ isLoggedIn: isLoggedIn() });
+
+      const inFutureMs = expiresAt * 1000 - new Date().getTime() + 100;
+      if (inFutureMs >= 0) {
+        console.log('Will expire in:', inFutureMs);
+        setTimeout(() => {
+          useStore.setState({ isLoggedIn: isLoggedIn() });
+        }, expiresAt);
+      }
     }
   );
 
