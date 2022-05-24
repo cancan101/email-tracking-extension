@@ -13,3 +13,8 @@ div[style*="__EMAIL_TRACKING_BACKEND_URL__/image.gif"][height="1"][width="1"] {
 .tracker-img {
     display: none !important;
 }
+
+.btn-login {
+    margin-left: 0px !important;
+    margin-right: 0px !important;
+}
