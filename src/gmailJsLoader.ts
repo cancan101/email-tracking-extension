@@ -4,12 +4,13 @@ import { decodeJwt } from 'jose';
 import dayjs from 'dayjs';
 import localizedFormat from 'dayjs/plugin/localizedFormat';
 import React from 'react';
-import { render } from 'react-dom';
+import { render, unmountComponentAtNode } from 'react-dom';
 
 import InboxViewList from './containers/InboxViewList';
 import ThreadViewList from './containers/ThreadViewList';
 import LoginButton from './containers/LoginButton';
 import TrackingButton from './containers/TrackingButton';
+import ThreadTrackingButton from './containers/ThreadTrackingButton';
 
 // import style required for TS to work
 const GmailFactory = require('gmail-js');
@@ -91,6 +92,31 @@ gmail.observe.on('view_email', function (domEmail) {
   console.log('Email data:', emailData);
 });
 
+const showThreadViews = (views: any[] | null) => {
+  gmail.tools.add_modal_window('Tracking information', '', () => {
+    gmail.tools.remove_modal_window();
+  });
+  // TODO(cancan101): cleanup: https://reactjs.org/blog/2015/10/01/react-render-and-top-level-api.html
+  render(
+    React.createElement(ThreadViewList, { views }, null),
+    jQuery('#gmailJsModalWindowContent')[0]
+  );
+};
+
+const getThreadViews = async (threadId: string): Promise<any[] | null> => {
+  try {
+    const resp = await fetchAuth(`${infoUrl}?threadId=${threadId}`);
+    if (resp.ok) {
+      const data = await resp.json();
+      const { views } = data;
+      return views;
+    }
+  } catch (e) {
+    console.log(e);
+  }
+  return null;
+};
+
 gmail.observe.on('view_thread', function (obj) {
   const threadElem = (obj as any)
     .dom()[0]
@@ -103,46 +129,43 @@ gmail.observe.on('view_thread', function (obj) {
       console.log('view_thread. obj:', obj, threadId, threadData);
 
       setTimeout(() => {
-        if (isLoggedIn()) {
-          const btnTrackingThread = gmail.tools.add_toolbar_button(
-            'Tracking',
-            async () => {
-              try {
-                const resp = await fetchAuth(`${infoUrl}?threadId=${threadId}`);
-                if (resp.ok) {
-                  const data = await resp.json();
-                  const { views } = data;
+        const btnTrackingThread = gmail.tools.add_toolbar_button(
+          null as any as string,
+          null as any as Function,
+          `${btnTrackingThreadClass} ${btnManageMarginClass}`
+        );
+        btnTrackingThread.children().off('click');
+        const btnTrackingThreadBtnContainer = document.createElement('div');
+        jQuery(btnTrackingThread.children()[0]).append(
+          jQuery(btnTrackingThreadBtnContainer)
+        );
 
-                  gmail.tools.add_modal_window(
-                    'Tracking information',
-                    '',
-                    () => {
-                      gmail.tools.remove_modal_window();
-                    }
-                  );
-                  // TODO(cancan101): cleanup: https://reactjs.org/blog/2015/10/01/react-render-and-top-level-api.html
-                  render(
-                    React.createElement(ThreadViewList, { views }, null),
-                    jQuery('#gmailJsModalWindowContent')[0]
-                  );
-                }
-              } catch (e) {
-                console.log(e);
+        const threadTrackingButtonElement = React.createElement(
+          ThreadTrackingButton,
+          {
+            getThreadViews: () => getThreadViews(threadId),
+            showThreadViews,
+            isLoggedIn: isLoggedIn(),
+          },
+          null
+        );
+        render(threadTrackingButtonElement, btnTrackingThreadBtnContainer);
+
+        const observer = new MutationObserver(function (mutations_list) {
+          mutations_list.forEach(function (mutation) {
+            mutation.removedNodes.forEach(function (removed_node) {
+              if (removed_node.contains(btnTrackingThread[0])) {
+                unmountComponentAtNode(btnTrackingThreadBtnContainer);
+                observer.disconnect();
               }
-            },
-            btnTrackingThreadClass
-          );
-
-          fetchAuth(`${infoUrl}?threadId=${threadId}`).then(async (resp) => {
-            if (resp.ok) {
-              const data = await resp.json();
-              const { views } = data;
-              const trackingStats = views != null ? views.length : 'n/a';
-
-              btnTrackingThread.children().text(`Tracking (${trackingStats})`);
-            }
+            });
           });
-        }
+        });
+        const bar = jQuery('[gh="tm"]');
+        observer.observe(bar.parent()[0], {
+          subtree: true,
+          childList: true,
+        });
       }, 0);
     }
   }
