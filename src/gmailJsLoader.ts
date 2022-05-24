@@ -32,7 +32,7 @@ const imageBaseUrl = `${baseUrl}/t`;
 const reportUrl = `${baseUrl}/report`;
 const infoUrl = `${baseUrl}/info`;
 const dashboardUrl = `${baseUrl}/dashboard`;
-// const loginUrl = `${baseUrl}/login/magic`;
+const loginUrl = `${baseUrl}/login/magic`;
 
 const btnTrackingClass = 'btn-tracking';
 const btnLoginClass = 'btn-login';
@@ -198,6 +198,16 @@ gmail.observe.on('load', () => {
 
   console.log('gmail-js loaded!', userEmail);
 
+  const requestLogin = async () => {
+    await fetch(loginUrl, {
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      method: 'POST',
+      body: JSON.stringify({ email: userEmail }),
+    });
+  };
+
   const loginBtnContainer = document.createElement('div');
 
   function setupLogin() {
@@ -219,7 +229,11 @@ gmail.observe.on('load', () => {
     }
     const loginButtonElement = React.createElement(
       LoginButton,
-      { userEmail: userEmail as string, loggedIn: isLoggedIn() },
+      {
+        userEmail: userEmail as string,
+        isLoggedIn: isLoggedIn(),
+        requestLogin,
+      },
       null
     );
     render(loginButtonElement, loginBtnContainer);

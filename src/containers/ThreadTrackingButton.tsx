@@ -17,9 +17,10 @@ export default function ThreadTrackingButton({
     }
   }, [isLoggedIn, getThreadViews]);
 
-  const onClick = async () => {
-    const views = await getThreadViews();
-    showThreadViews(views);
+  const onClick = () => {
+    if (views !== undefined) {
+      showThreadViews(views);
+    }
   };
 
   let labelExtra: string;

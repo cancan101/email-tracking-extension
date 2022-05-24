@@ -1,44 +1,41 @@
 import React, { useState } from 'react';
 
-const baseUrl = process.env.EMAIL_TRACKING_BACKEND_URL;
-const loginUrl = `${baseUrl}/login/magic`;
-
 type LoginState = 'UNREQUESTED' | 'REQUESTING' | 'REQUESTED';
 
 export default function LoginButton({
-  userEmail,
-  loggedIn,
+  isLoggedIn,
+  requestLogin,
 }: {
-  userEmail: string;
-  loggedIn: boolean;
+  isLoggedIn: boolean;
+  requestLogin: () => Promise<void>;
 }): React.ReactElement {
   const [loginState, setLoginState] = useState<LoginState>('UNREQUESTED');
 
+  let label: string;
   if (loginState === 'REQUESTING') {
-    return <div>Requesting...</div>;
+    label = 'Requesting...';
   } else if (loginState === 'REQUESTED') {
-    return <div>Requested</div>;
+    label = 'Requested';
+  } else {
+    label = 'Login';
   }
 
   const doLogin = async () => {
+    if (loginState !== 'UNREQUESTED') {
+      return;
+    }
     setLoginState('REQUESTING');
-    await fetch(loginUrl, {
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      method: 'POST',
-      body: JSON.stringify({ email: userEmail }),
-    });
+    await requestLogin();
     setLoginState('REQUESTED');
   };
 
-  const style = loggedIn
+  const style = isLoggedIn
     ? { display: 'none' }
     : { marginLeft: '12px', marginRight: '12px' };
 
   return (
     <div style={style} onClick={doLogin}>
-      Login
+      {label}
     </div>
   );
 }
