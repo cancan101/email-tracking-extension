@@ -42,15 +42,14 @@ chrome.runtime.onMessage.addListener(function (request, sender, sendResponse) {
     notifyLogin(request.emailAccount);
   } else if (request.your === 'LOG_OUT') {
     console.log('receive logout');
-    // TODO: notify login rather than forcing reload
-    reloadTabs();
+    notifyLogout();
   }
   // https://stackoverflow.com/a/71520415/2638485
   sendResponse();
 });
 
 function reloadTabs(): void {
-  chrome.tabs.query({ url: '*://mail.google.com/*' }, function (tabs) {
+  chrome.tabs.query({ url: 'https://mail.google.com/*' }, function (tabs) {
     tabs.forEach(function (tab) {
       if (tab.id !== undefined) {
         chrome.tabs.reload(tab.id);
@@ -60,10 +59,20 @@ function reloadTabs(): void {
 }
 
 function notifyLogin(emailAccount: string): void {
-  chrome.tabs.query({ url: '*://mail.google.com/*' }, function (tabs) {
+  chrome.tabs.query({ url: 'https://mail.google.com/*' }, function (tabs) {
     tabs.forEach(function (tab) {
       if (tab.id !== undefined) {
         chrome.tabs.sendMessage(tab.id, { your: 'LOGIN_IN', emailAccount });
+      }
+    });
+  });
+}
+
+function notifyLogout(emailAccount?: string): void {
+  chrome.tabs.query({ url: 'https://mail.google.com/*' }, function (tabs) {
+    tabs.forEach(function (tab) {
+      if (tab.id !== undefined) {
+        chrome.tabs.sendMessage(tab.id, { your: 'LOG_OUT', emailAccount });
       }
     });
   });

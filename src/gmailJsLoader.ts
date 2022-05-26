@@ -176,7 +176,6 @@ const ids: string[] = [];
 
 // Listen for "login" notification
 window.addEventListener(
-  // TODO: rename this
   'login-notice',
   function (event: any) {
     const userEmailIncoming = event.detail.emailAccount;
@@ -184,6 +183,21 @@ window.addEventListener(
     console.log('login-notice', userEmail, userEmailIncoming, event.detail);
     if (userEmail !== null && userEmail === userEmailIncoming) {
       requestStorage();
+    }
+  },
+  false
+);
+window.addEventListener(
+  'logout-notice',
+  function (event: any) {
+    const userEmailIncoming = event.detail.emailAccount;
+    const { userEmail } = useStore.getState();
+    console.log('logout-notice', userEmail, userEmailIncoming, event.detail);
+    if (
+      userEmailIncoming == null ||
+      (userEmail !== null && userEmail === userEmailIncoming)
+    ) {
+      processLogout();
     }
   },
   false
@@ -400,6 +414,9 @@ gmail.observe.on('load', () => {
 
 gmail.observe.on('compose', function (compose, _) {
   console.log('compose', compose, compose.id());
+  if (!useStore.getState().isLoggedIn()) {
+    return;
+  }
 
   // TODO(cancan101): figure out if the window is re-opened due to a failed send
 
@@ -435,6 +452,7 @@ gmail.observe.on('compose', function (compose, _) {
   );
 });
 
+let clearUserInfoHandle: number | null = null;
 function requestStorage() {
   const emailAccount = useStore.getState().userEmail;
   console.log('requestStorage::requesting', emailAccount);
@@ -471,14 +489,24 @@ function requestStorage() {
       const inFutureMs = expiresAt * 1000 - new Date().getTime() + 100;
       if (inFutureMs >= 0) {
         console.log('userInfo will expire in (ms):', inFutureMs);
-        setTimeout(() => {
-          console.log('Clearing userInfo');
-          useStore.setState({ userInfo: null });
-        }, inFutureMs);
+        if (clearUserInfoHandle) {
+          clearTimeout(clearUserInfoHandle);
+        }
+        clearUserInfoHandle = window.setTimeout(processLogout, inFutureMs);
       }
     }
   );
 }
+
+const processLogout = () => {
+  clearUserInfoHandle = null;
+  console.log(
+    'Clearing userInfo',
+    new Date().getTime() / 1000,
+    useStore.getState().userInfo?.expiresAt
+  );
+  useStore.setState({ userInfo: null });
+};
 
 /*
 async function sendTestMessage(): Promise<string> {

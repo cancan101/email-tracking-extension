@@ -27,8 +27,11 @@ addScript('gmailJsLoader.bundle.js');
 chrome.runtime.onMessage.addListener(function (request, sender, sendResponse) {
   console.log('contentScript::onMessage', request, sender);
   // TODO: check the sender here
-  if (request.your === 'LOGIN_IN') {
+  const eventType = request.your;
+  if (eventType === 'LOGIN_IN') {
     window.dispatchEvent(new CustomEvent('login-notice', { detail: request }));
+  } else if (eventType === 'LOG_OUT') {
+    window.dispatchEvent(new CustomEvent('logout-notice', { detail: request }));
   }
   sendResponse();
 });
