@@ -80,15 +80,24 @@ gmail.observe.on('view_email', function (domEmail) {
   console.log('Email data:', emailData);
 });
 
+const closeModal = () => {
+  unmountComponentAtNode(jQuery('#gmailJsModalWindowContent')[0]);
+  gmail.tools.remove_modal_window();
+};
+
 const showThreadViews = (views: View[] | null) => {
-  gmail.tools.add_modal_window('Tracking information', '', () => {
-    gmail.tools.remove_modal_window();
-  });
-  // TODO(cancan101): cleanup: https://reactjs.org/blog/2015/10/01/react-render-and-top-level-api.html
+  gmail.tools.add_modal_window(
+    'Tracking information',
+    '',
+    closeModal,
+    closeModal,
+    closeModal
+  );
   render(
     React.createElement(ThreadViewList, { views }, null),
     jQuery('#gmailJsModalWindowContent')[0]
   );
+  jQuery('#gmailJsModalWindowCancel').hide();
 };
 
 const getThreadViews = async (threadId: string): Promise<View[] | null> => {
@@ -204,139 +213,127 @@ window.addEventListener(
 );
 // window.dispatchEvent(new CustomEvent('get-settings-data'));
 
+function renderTrackingInfo(views: View[]) {
+  gmail.tools.add_modal_window(
+    'Tracking information',
+    '',
+    closeModal,
+    closeModal,
+    closeModal
+  );
+  render(
+    React.createElement(InboxViewList, { views, closeModal }, null),
+    jQuery('#gmailJsModalWindowContent')[0]
+  );
+  jQuery('#gmailJsModalWindowCancel').hide();
+}
+
+async function getUserViews(): Promise<View[] | null> {
+  const userId = useStore.getState().userInfo?.userId;
+  if (userId === undefined) {
+    throw new Error('No userId');
+  }
+  const resp = await fetchAuth(`${dashboardUrl}?userId=${userId}`);
+  if (resp.ok) {
+    const data = await resp.json();
+    if (data.views !== null) {
+      const allViews = data.views as View[];
+      return allViews.slice(0, 10);
+    }
+  }
+  return null;
+}
+
+const trackingBtnContainer = document.createElement('div');
+
+function setupTracking() {
+  const buttons = jQuery(`[gh="mtb"] .${btnTrackingClass}`);
+  if (buttons.length === 0) {
+    const container = gmail.tools.add_toolbar_button(
+      null as any as string,
+      null as any as Function,
+      `${btnTrackingClass} ${btnManageMarginClass}`
+    );
+    container.children().off('click');
+    jQuery(container.children()[0]).append(jQuery(trackingBtnContainer));
+
+    const trackingButtonElement = React.createElement(
+      TrackingButton,
+      {
+        getUserViews,
+        renderTrackingInfo,
+      },
+      null
+    );
+    render(trackingButtonElement, trackingBtnContainer);
+  } else if (buttons.parent().attr('style') != null) {
+    // https://github.com/KartikTalwar/gmail.js/issues/518#issuecomment-1132242028
+    buttons.parent().attr('style', null);
+  } else if (buttons.children().length === 0) {
+    // we have to re-attach the container
+    buttons.append(jQuery(trackingBtnContainer));
+  }
+  // maybe move
+  useStore.setState({ isInsideEmail: gmail.check.is_inside_email() });
+}
+
+const requestLogin = async () => {
+  const emailAccount = useStore.getState().userEmail;
+
+  await fetch(loginUrl, {
+    headers: {
+      'Content-Type': 'application/json',
+    },
+    method: 'POST',
+    body: JSON.stringify({ email: emailAccount }),
+  });
+};
+
+const loginBtnContainer = document.createElement('div');
+
+function setupLogin() {
+  const buttons = jQuery(`[gh="mtb"] .${btnLoginClass}`);
+  if (buttons.length === 0) {
+    const container = gmail.tools.add_toolbar_button(
+      null as any as string,
+      null as any as Function,
+      `${btnLoginClass} ${btnManageMarginClass}`
+    );
+    container.children().off('click');
+    jQuery(container.children()[0]).append(jQuery(loginBtnContainer));
+
+    const loginButtonElement = React.createElement(
+      LoginButton,
+      {
+        requestLogin,
+      },
+      null
+    );
+    render(loginButtonElement, loginBtnContainer);
+  } else if (buttons.parent().attr('style') != null) {
+    // https://github.com/KartikTalwar/gmail.js/issues/518#issuecomment-1132242028
+    buttons.parent().attr('style', null);
+  } else if (buttons.children().length === 0) {
+    // we have to re-attach the container
+    buttons.append(jQuery(loginBtnContainer));
+  }
+}
+
 gmail.observe.on('load', () => {
   const userEmail = gmail.get.user_email();
   useStore.setState({ userEmail });
 
   console.log('gmail-js loaded!', userEmail);
-
-  const requestLogin = async () => {
-    await fetch(loginUrl, {
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      method: 'POST',
-      body: JSON.stringify({ email: userEmail }),
-    });
-  };
-
-  const loginBtnContainer = document.createElement('div');
-
-  function setupLogin() {
-    const buttons = jQuery(`[gh="mtb"] .${btnLoginClass}`);
-    if (buttons.length === 0) {
-      const container = gmail.tools.add_toolbar_button(
-        null as any as string,
-        null as any as Function,
-        `${btnLoginClass} ${btnManageMarginClass}`
-      );
-      container.children().off('click');
-      jQuery(container.children()[0]).append(jQuery(loginBtnContainer));
-
-      const loginButtonElement = React.createElement(
-        LoginButton,
-        {
-          requestLogin,
-        },
-        null
-      );
-      render(loginButtonElement, loginBtnContainer);
-    } else if (buttons.parent().attr('style') != null) {
-      // https://github.com/KartikTalwar/gmail.js/issues/518#issuecomment-1132242028
-      buttons.parent().attr('style', null);
-    } else if (buttons.children().length === 0) {
-      // we have to re-attach the container
-      buttons.append(jQuery(loginBtnContainer));
-    }
-  }
+  requestStorage();
 
   setInterval(function () {
     setupTracking();
     setupLogin();
   }, 500);
 
-  function renderTrackingInfo(views: View[]) {
-    gmail.tools.add_modal_window('Tracking information', '', () => {
-      gmail.tools.remove_modal_window();
-    });
-    // TODO(cancan101): cleanup: https://reactjs.org/blog/2015/10/01/react-render-and-top-level-api.html
-    render(
-      React.createElement(
-        InboxViewList,
-        { views, closeModal: gmail.tools.remove_modal_window },
-        null
-      ),
-      jQuery('#gmailJsModalWindowContent')[0]
-    );
-  }
-
-  async function getUserViews(): Promise<View[] | null> {
-    const userId = useStore.getState().userInfo?.userId;
-    if (userId === undefined) {
-      throw new Error('No userId');
-    }
-    const resp = await fetchAuth(`${dashboardUrl}?userId=${userId}`);
-    if (resp.ok) {
-      const data = await resp.json();
-      if (data.views !== null) {
-        const allViews = data.views as View[];
-        return allViews.slice(0, 10);
-      }
-    }
-    return null;
-  }
-
-  const trackingBtnContainer = document.createElement('div');
-
-  function setupTracking() {
-    const buttons = jQuery(`[gh="mtb"] .${btnTrackingClass}`);
-    if (buttons.length === 0) {
-      const container = gmail.tools.add_toolbar_button(
-        null as any as string,
-        null as any as Function,
-        `${btnTrackingClass} ${btnManageMarginClass}`
-      );
-      container.children().off('click');
-      jQuery(container.children()[0]).append(jQuery(trackingBtnContainer));
-
-      const trackingButtonElement = React.createElement(
-        TrackingButton,
-        {
-          getUserViews,
-          renderTrackingInfo,
-        },
-        null
-      );
-      render(trackingButtonElement, trackingBtnContainer);
-    } else if (buttons.parent().attr('style') != null) {
-      // https://github.com/KartikTalwar/gmail.js/issues/518#issuecomment-1132242028
-      buttons.parent().attr('style', null);
-    } else if (buttons.children().length === 0) {
-      // we have to re-attach the container
-      buttons.append(jQuery(trackingBtnContainer));
-    }
-    // maybe move
-    useStore.setState({ isInsideEmail: gmail.check.is_inside_email() });
-  }
-
-  requestStorage();
-
   gmail.observe.after(
     'send_message',
     async function (url, body, data, response, xhr): Promise<void> {
-      // console.log(
-      //   'send_message. url:',
-      //   url,
-      //   'body',
-      //   body,
-      //   'email_data',
-      //   data,
-      //   'response',
-      //   response,
-      //   'xhr',
-      //   xhr
-      // );
-
       if (xhr.readyState === 4 && xhr.status === 0) {
         console.log('Issue with send');
         return;
