@@ -39,8 +39,7 @@ chrome.runtime.onMessage.addListener(function (request, sender, sendResponse) {
   console.log('background::onMessage', request, sender);
   if (request.your === 'LOGIN_IN') {
     console.log('receive login');
-    // TODO: pull off the login info
-    notifyLogin(request);
+    notifyLogin(request.emailAccount);
   } else if (request.your === 'LOG_OUT') {
     console.log('receive logout');
     // TODO: notify login rather than forcing reload
@@ -50,19 +49,22 @@ chrome.runtime.onMessage.addListener(function (request, sender, sendResponse) {
   sendResponse();
 });
 
-function reloadTabs() {
+function reloadTabs(): void {
   chrome.tabs.query({ url: '*://mail.google.com/*' }, function (tabs) {
     tabs.forEach(function (tab) {
-      chrome.tabs.reload(tab.id);
+      if (tab.id !== undefined) {
+        chrome.tabs.reload(tab.id);
+      }
     });
   });
 }
 
-function notifyLogin(request) {
+function notifyLogin(emailAccount: string): void {
   chrome.tabs.query({ url: '*://mail.google.com/*' }, function (tabs) {
     tabs.forEach(function (tab) {
-      // TODO: format just the info needed to indicate login
-      chrome.tabs.sendMessage(tab.id, { request });
+      if (tab.id !== undefined) {
+        chrome.tabs.sendMessage(tab.id, { your: 'LOGIN_IN', emailAccount });
+      }
     });
   });
 }

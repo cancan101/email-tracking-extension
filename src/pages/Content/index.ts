@@ -25,17 +25,10 @@ addScript('gmailJsLoader.bundle.js');
 // );
 
 chrome.runtime.onMessage.addListener(function (request, sender, sendResponse) {
-  console.log(
-    'contentScript::onMessage',
-    request,
-    sender,
-    request.request.your
-  );
+  console.log('contentScript::onMessage', request, sender);
   // TODO: check the sender here
-  if (request.request.your === 'LOGIN_IN') {
-    window.dispatchEvent(
-      new CustomEvent('settings-retrieved', { detail: request })
-    );
+  if (request.your === 'LOGIN_IN') {
+    window.dispatchEvent(new CustomEvent('login-notice', { detail: request }));
   }
   sendResponse();
 });

@@ -177,16 +177,11 @@ const ids: string[] = [];
 // Listen for "login" notification
 window.addEventListener(
   // TODO: rename this
-  'settings-retrieved',
+  'login-notice',
   function (event: any) {
-    const userEmailIncoming = event.detail.request.emailAccount;
+    const userEmailIncoming = event.detail.emailAccount;
     const { userEmail } = useStore.getState();
-    console.log(
-      'settings-retrieved',
-      userEmail,
-      userEmailIncoming,
-      event.detail
-    );
+    console.log('login-notice', userEmail, userEmailIncoming, event.detail);
     if (userEmail !== null && userEmail === userEmailIncoming) {
       requestStorage();
     }
@@ -442,7 +437,7 @@ gmail.observe.on('compose', function (compose, _) {
 
 function requestStorage() {
   const emailAccount = useStore.getState().userEmail;
-  console.log('requestStorage', emailAccount);
+  console.log('requestStorage::requesting', emailAccount);
   if (emailAccount === null) {
     return;
   }
@@ -454,7 +449,7 @@ function requestStorage() {
         return;
       }
       // handle the response
-      console.log('requestStorage:resp', response);
+      console.log('requestStorage:response', response);
 
       const accessToken = response.accessToken as string;
       const expiresAt = response.expiresAt as number;
@@ -466,15 +461,16 @@ function requestStorage() {
         return;
       }
       const sub = claims.sub;
+      const userInfo = { accessToken, expiresAt, trackingSlug, userId: sub };
 
-      console.log('Received log in info', response, sub);
+      console.log('Setting userInfo', userInfo);
       useStore.setState({
-        userInfo: { accessToken, expiresAt, trackingSlug, userId: sub },
+        userInfo,
       });
 
       const inFutureMs = expiresAt * 1000 - new Date().getTime() + 100;
       if (inFutureMs >= 0) {
-        console.log('Will expire in:', inFutureMs);
+        console.log('userInfo will expire in (ms):', inFutureMs);
         setTimeout(() => {
           console.log('Clearing userInfo');
           useStore.setState({ userInfo: null });
