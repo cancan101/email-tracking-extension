@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import useStore from './store';
 
 type LoginState = 'UNREQUESTED' | 'REQUESTING' | 'REQUESTED';
@@ -28,6 +28,12 @@ export default function LoginButton({
     await requestLogin();
     setLoginState('REQUESTED');
   };
+
+  useEffect(() => {
+    if (isLoggedIn) {
+      setLoginState('UNREQUESTED');
+    }
+  }, [isLoggedIn]);
 
   const style = isLoggedIn
     ? { display: 'none' }
