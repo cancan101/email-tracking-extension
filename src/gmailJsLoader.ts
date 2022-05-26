@@ -486,14 +486,13 @@ function requestStorage() {
         userInfo,
       });
 
-      const inFutureMs = expiresAt * 1000 - new Date().getTime() + 100;
-      if (inFutureMs >= 0) {
-        console.log('userInfo will expire in (ms):', inFutureMs);
-        if (clearUserInfoHandle) {
-          clearTimeout(clearUserInfoHandle);
-        }
-        clearUserInfoHandle = window.setTimeout(processLogout, inFutureMs);
+      const slop = 1000;
+      const inFutureMs = expiresAt * 1000 - new Date().getTime() - slop;
+      console.log('userInfo will expire in (ms):', inFutureMs);
+      if (clearUserInfoHandle) {
+        clearTimeout(clearUserInfoHandle);
       }
+      clearUserInfoHandle = window.setTimeout(processLogout, inFutureMs);
     }
   );
 }
