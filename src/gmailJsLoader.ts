@@ -174,16 +174,28 @@ gmail.observe.on('view_thread', function (obj) {
 
 const ids: string[] = [];
 
-gmail.observe.on('load', () => {
-  // window.addEventListener(
-  //   'settings-retrieved',
-  //   function (event: any) {
-  //     console.log('settings-retrieved', event.detail);
-  //   },
-  //   false
-  // );
-  // window.dispatchEvent(new CustomEvent('get-settings-data'));
+// Listen for "login" notification
+window.addEventListener(
+  // TODO: rename this
+  'settings-retrieved',
+  function (event: any) {
+    const userEmailIncoming = event.detail.request.emailAccount;
+    const { userEmail } = useStore.getState();
+    console.log(
+      'settings-retrieved',
+      userEmail,
+      userEmailIncoming,
+      event.detail
+    );
+    if (userEmail !== null && userEmail === userEmailIncoming) {
+      requestStorage();
+    }
+  },
+  false
+);
+// window.dispatchEvent(new CustomEvent('get-settings-data'));
 
+gmail.observe.on('load', () => {
   const userEmail = gmail.get.user_email();
   useStore.setState({ userEmail });
 
@@ -298,37 +310,7 @@ gmail.observe.on('load', () => {
     useStore.setState({ isInsideEmail: gmail.check.is_inside_email() });
   }
 
-  chrome.runtime.sendMessage(
-    extensionId,
-    { your: 'STORAGE', emailAccount: userEmail },
-    function (response: any): void {
-      // handle the response
-      const accessToken = response.accessToken as string;
-      const expiresAt = response.expiresAt as number;
-      const trackingSlug = response.trackingSlug as string;
-
-      const claims = decodeJwt(accessToken);
-      if (!claims.sub) {
-        console.log('Missing sub claim');
-        return;
-      }
-      const sub = claims.sub;
-
-      console.log('Received log in info', response, sub);
-      useStore.setState({
-        userInfo: { accessToken, expiresAt, trackingSlug, userId: sub },
-      });
-
-      const inFutureMs = expiresAt * 1000 - new Date().getTime() + 100;
-      if (inFutureMs >= 0) {
-        console.log('Will expire in:', inFutureMs);
-        setTimeout(() => {
-          console.log('Clearing userInfo');
-          useStore.setState({ userInfo: null });
-        }, expiresAt);
-      }
-    }
-  );
+  requestStorage();
 
   gmail.observe.after(
     'send_message',
@@ -457,3 +439,62 @@ gmail.observe.on('compose', function (compose, _) {
     'tracker-mail-tracked'
   );
 });
+
+function requestStorage() {
+  const emailAccount = useStore.getState().userEmail;
+  console.log('requestStorage', emailAccount);
+  if (emailAccount === null) {
+    return;
+  }
+  chrome.runtime.sendMessage(
+    extensionId,
+    { your: 'STORAGE', emailAccount },
+    function (response: any): void {
+      if (response == null) {
+        return;
+      }
+      // handle the response
+      console.log('requestStorage:resp', response);
+
+      const accessToken = response.accessToken as string;
+      const expiresAt = response.expiresAt as number;
+      const trackingSlug = response.trackingSlug as string;
+
+      const claims = decodeJwt(accessToken);
+      if (!claims.sub) {
+        console.log('Missing sub claim');
+        return;
+      }
+      const sub = claims.sub;
+
+      console.log('Received log in info', response, sub);
+      useStore.setState({
+        userInfo: { accessToken, expiresAt, trackingSlug, userId: sub },
+      });
+
+      const inFutureMs = expiresAt * 1000 - new Date().getTime() + 100;
+      if (inFutureMs >= 0) {
+        console.log('Will expire in:', inFutureMs);
+        setTimeout(() => {
+          console.log('Clearing userInfo');
+          useStore.setState({ userInfo: null });
+        }, inFutureMs);
+      }
+    }
+  );
+}
+
+/*
+async function sendTestMessage(): Promise<string> {
+  return new Promise<string>((resolve, reject) => {
+    const { userEmail } = useStore.getState();
+    chrome.runtime.sendMessage(
+      extensionId,
+      { your: 'TEST', emailAccount: userEmail },
+      function (response: any): void {
+        resolve(response.foo);
+      }
+    );
+  });
+}
+*/
