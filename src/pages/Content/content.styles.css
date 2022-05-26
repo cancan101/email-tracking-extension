@@ -3,6 +3,16 @@
 }
 
 /* On Self-open (Legacy URL) */
+div[style*="__EMAIL_TRACKING_BACKEND_URL_OLD__/image.gif"][height="1"][width="1"] {
+    display: none !important;
+}
+
+/* On Self-open */
+div[style*="__EMAIL_TRACKING_BACKEND_URL_OLD__/t/"][style*="image.gif"][height="1"][width="1"] {
+    display: none !important;
+}
+
+/* On Self-open (Legacy URL) */
 div[style*="__EMAIL_TRACKING_BACKEND_URL__/image.gif"][height="1"][width="1"] {
     display: none !important;
 }

@@ -166,6 +166,11 @@ var options = {
                   '__EMAIL_TRACKING_BACKEND_URL__',
                   process.env.EMAIL_TRACKING_BACKEND_URL
                 )
+                .replaceAll(
+                  '__EMAIL_TRACKING_BACKEND_URL_OLD__',
+                  process.env.EMAIL_TRACKING_BACKEND_URL_OLD ||
+                    process.env.EMAIL_TRACKING_BACKEND_URL
+                )
             );
           },
         },
