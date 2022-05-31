@@ -74,6 +74,48 @@ async function fetchAuth(
 
 // -------------------------------------------------
 
+interface DomObserverConfig {
+  class: string | string[];
+  selector?: string;
+  sub_selector?: string;
+  handler?: Function;
+}
+
+const popoutThreadConfig: DomObserverConfig = {
+  class: 'nH',
+  sub_selector: 'div.iC',
+  handler: function (match: JQuery<HTMLElement>, callback: any) {
+    setTimeout(() => {
+      callback(match);
+    });
+  },
+};
+
+gmail.observe.register('popout_thread', popoutThreadConfig as any);
+
+(gmail.observe as any).on_dom(
+  'popout_thread',
+  function (obj: JQuery<HTMLElement>) {
+    const handle = setInterval(() => {
+      const threadElem = obj[0].querySelector<HTMLElement>(
+        '[data-thread-perm-id]'
+      );
+      if (threadElem) {
+        clearInterval(handle);
+
+        const threadId: string | undefined = threadElem.dataset['threadPermId'];
+        if (threadId) {
+          console.log('popout_thread. threadId:', threadId);
+          useStore.setState({ isPopout: true });
+          setupInThread(threadId);
+        } else {
+          console.log('popout_thread no threadId', threadElem);
+        }
+      }
+    }, 100);
+  }
+);
+
 gmail.observe.on('view_email', function (domEmail) {
   console.log('Email opened with ID', domEmail.id);
   const emailData = gmail.new.get.email_data(domEmail);
@@ -114,10 +156,51 @@ const getThreadViews = async (threadId: string): Promise<View[] | null> => {
   return null;
 };
 
+const setupInThread = (threadId: string) => {
+  const btnTrackingThread = gmail.tools.add_toolbar_button(
+    null as any as string,
+    null as any as Function,
+    `${btnTrackingThreadClass} ${btnManageMarginClass}`
+  );
+  btnTrackingThread.children().off('click');
+  const btnTrackingThreadBtnContainer = document.createElement('div');
+  // can we de-jquery some
+  jQuery(btnTrackingThread.children()[0]).append(
+    jQuery(btnTrackingThreadBtnContainer)
+  );
+
+  const threadTrackingButtonElement = React.createElement(
+    ThreadTrackingButton,
+    {
+      getThreadViews: () => getThreadViews(threadId),
+      showThreadViews,
+    },
+    null
+  );
+  render(threadTrackingButtonElement, btnTrackingThreadBtnContainer);
+
+  const observer = new MutationObserver(function (mutations_list) {
+    mutations_list.forEach(function (mutation) {
+      mutation.removedNodes.forEach(function (removed_node) {
+        if (removed_node.contains(btnTrackingThread[0])) {
+          unmountComponentAtNode(btnTrackingThreadBtnContainer);
+          observer.disconnect();
+        }
+      });
+    });
+  });
+  const bar = jQuery('[gh="tm"]');
+  observer.observe(bar.parent()[0], {
+    subtree: true,
+    childList: true,
+  });
+};
+
 gmail.observe.on('view_thread', function (obj) {
-  const threadElem = (obj as any)
-    .dom()[0]
-    .querySelector('[data-thread-perm-id]');
+  const threadElem = obj
+    // https://github.com/KartikTalwar/gmail.js/pull/697
+    .dom(undefined as any)[0]
+    .querySelector<HTMLElement>('[data-thread-perm-id]');
   if (threadElem) {
     const threadId: string | undefined = threadElem.dataset['threadPermId'];
     if (threadId) {
@@ -127,44 +210,7 @@ gmail.observe.on('view_thread', function (obj) {
 
       setTimeout(() => {
         useStore.setState({ isInsideEmail: true });
-
-        const btnTrackingThread = gmail.tools.add_toolbar_button(
-          null as any as string,
-          null as any as Function,
-          `${btnTrackingThreadClass} ${btnManageMarginClass}`
-        );
-        btnTrackingThread.children().off('click');
-        const btnTrackingThreadBtnContainer = document.createElement('div');
-        // can we de-jquery some
-        jQuery(btnTrackingThread.children()[0]).append(
-          jQuery(btnTrackingThreadBtnContainer)
-        );
-
-        const threadTrackingButtonElement = React.createElement(
-          ThreadTrackingButton,
-          {
-            getThreadViews: () => getThreadViews(threadId),
-            showThreadViews,
-          },
-          null
-        );
-        render(threadTrackingButtonElement, btnTrackingThreadBtnContainer);
-
-        const observer = new MutationObserver(function (mutations_list) {
-          mutations_list.forEach(function (mutation) {
-            mutation.removedNodes.forEach(function (removed_node) {
-              if (removed_node.contains(btnTrackingThread[0])) {
-                unmountComponentAtNode(btnTrackingThreadBtnContainer);
-                observer.disconnect();
-              }
-            });
-          });
-        });
-        const bar = jQuery('[gh="tm"]');
-        observer.observe(bar.parent()[0], {
-          subtree: true,
-          childList: true,
-        });
+        setupInThread(threadId);
       }, 0);
     }
   }
