@@ -9,6 +9,7 @@ type UserInfo = {
 
 type Store = {
   isInsideEmail: boolean;
+  isPopout: boolean;
   userEmail: string | null;
   userInfo: UserInfo | null;
   isLoggedIn: () => boolean;
@@ -30,6 +31,7 @@ function stateIsLoggedIn(state: Store): boolean {
 
 const useStore = create<Store>((set, get) => ({
   isInsideEmail: false,
+  isPopout: false,
   userEmail: null,
   userInfo: null,
   isLoggedIn: () => stateIsLoggedIn(get()),

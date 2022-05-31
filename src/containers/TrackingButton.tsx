@@ -17,6 +17,7 @@ export default function TrackingButton({
 }) {
   const isLoggedIn = useStore((state) => state.isLoggedIn());
   const isInsideEmail = useStore((state) => state.isInsideEmail);
+  const isPopout = useStore((state) => state.isPopout);
   const [views, setViews] = useState<View[] | null | undefined>(undefined);
 
   const onClick = () => {
@@ -40,7 +41,7 @@ export default function TrackingButton({
   }, [isLoggedIn, getUserViews]);
 
   const style =
-    isInsideEmail || !isLoggedIn
+    isInsideEmail || isPopout || !isLoggedIn
       ? { display: 'none' }
       : { marginLeft: '12px', marginRight: '12px' };
 
