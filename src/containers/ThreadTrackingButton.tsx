@@ -13,9 +13,14 @@ export default function ThreadTrackingButton({
   const isLoggedIn = useStore((state) => state.isLoggedIn());
 
   useEffect(() => {
+    // No way to cancel getThreadViews so we just keep track of unload
+    let isCancelled = false;
     if (isLoggedIn) {
-      getThreadViews().then((views) => setViews(views));
+      getThreadViews().then((views) => !isCancelled && setViews(views));
     }
+    return () => {
+      isCancelled = true;
+    };
   }, [isLoggedIn, getThreadViews]);
 
   const onClick = () => {
