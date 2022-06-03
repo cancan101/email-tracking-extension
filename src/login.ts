@@ -30,13 +30,15 @@ function processLogin() {
             trackingSlug,
           },
         })
-        .catch((e) => {
-          // ignore
-        });
-      chrome.runtime.sendMessage({ your: 'LOGIN_IN', emailAccount });
+        .then(() => {
+          chrome.runtime.sendMessage({ your: 'LOGIN_IN', emailAccount });
 
-      window.location.hash = '';
-      window.location.pathname = '/logged-in';
+          window.location.hash = '';
+          window.location.pathname = '/logged-in';
+        })
+        .catch((e) => {
+          console.error(e);
+        });
     } else {
       console.log('Missing accessToken or expiresIn');
       return;
