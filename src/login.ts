@@ -1,4 +1,38 @@
-function processLogin() {
+function processLogin(
+  accessToken: string,
+  expiresIn: number,
+  emailAccount: string,
+  trackingSlug: string
+) {
+  const expiresAt = new Date().getTime() / 1000 + expiresIn;
+  console.log(
+    'Saving accessToken and expiresAt',
+    emailAccount,
+    expiresAt,
+    expiresIn,
+    trackingSlug
+  );
+
+  chrome.storage.sync
+    .set({
+      [emailAccount]: {
+        accessToken,
+        expiresAt,
+        trackingSlug,
+      },
+    })
+    .then(() => {
+      chrome.runtime.sendMessage({ your: 'LOGIN_IN', emailAccount });
+
+      window.location.hash = '';
+      window.location.pathname = '/logged-in';
+    })
+    .catch((e) => {
+      console.error(e);
+    });
+}
+
+function processHashLogin() {
   console.log('Logging in...');
   // FIXME(cancan101): this is mega insecure and can have values injected.
   if (window.location.hash.charAt(0) === '#') {
@@ -13,32 +47,7 @@ function processLogin() {
 
     if (accessToken && expiresInStr && emailAccount && trackingSlug) {
       const expiresIn = parseInt(expiresInStr, 10);
-      const expiresAt = new Date().getTime() / 1000 + expiresIn;
-      console.log(
-        'Saving accessToken and expiresAt',
-        emailAccount,
-        expiresAt,
-        expiresIn,
-        trackingSlug
-      );
-
-      chrome.storage.sync
-        .set({
-          [emailAccount]: {
-            accessToken,
-            expiresAt,
-            trackingSlug,
-          },
-        })
-        .then(() => {
-          chrome.runtime.sendMessage({ your: 'LOGIN_IN', emailAccount });
-
-          window.location.hash = '';
-          window.location.pathname = '/logged-in';
-        })
-        .catch((e) => {
-          console.error(e);
-        });
+      processLogin(accessToken, expiresIn, emailAccount, trackingSlug);
     } else {
       console.log('Missing accessToken or expiresIn');
       return;
@@ -49,4 +58,4 @@ function processLogin() {
   }
 }
 
-processLogin();
+processHashLogin();
