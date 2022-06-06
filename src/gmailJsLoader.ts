@@ -74,14 +74,7 @@ async function fetchAuth(
 
 // -------------------------------------------------
 
-interface DomObserverConfig {
-  class: string | string[];
-  selector?: string;
-  sub_selector?: string;
-  handler?: Function;
-}
-
-const popoutThreadConfig: DomObserverConfig = {
+const popoutThreadConfig = {
   class: 'nH',
   sub_selector: 'div.iC',
   handler: function (match: JQuery<HTMLElement>, callback: any) {
@@ -91,7 +84,7 @@ const popoutThreadConfig: DomObserverConfig = {
   },
 };
 
-gmail.observe.register('popout_thread', popoutThreadConfig as any);
+gmail.observe.register('popout_thread', popoutThreadConfig);
 
 (gmail.observe as any).on_dom(
   'popout_thread',
@@ -199,7 +192,7 @@ const setupInThread = (threadId: string) => {
 gmail.observe.on('view_thread', function (obj) {
   const threadElem = obj
     // https://github.com/KartikTalwar/gmail.js/pull/697
-    .dom(undefined as any)[0]
+    .dom()[0]
     .querySelector<HTMLElement>('[data-thread-perm-id]');
   if (threadElem) {
     const threadId: string | undefined = threadElem.dataset['threadPermId'];
