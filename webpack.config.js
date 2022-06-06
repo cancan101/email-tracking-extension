@@ -129,11 +129,7 @@ var options = {
           to: path.join(__dirname, 'build'),
           force: true,
           transform: function (content, path) {
-            // generates the manifest file using the package.json informations
-
-            // TODO(cancan101):
-            // - remove source maps
-
+            // generates the manifest file using the package.json information
             const manifestContents = content
               .toString()
               .replaceAll(
@@ -141,13 +137,30 @@ var options = {
                 process.env.EMAIL_TRACKING_BACKEND_URL
               );
 
-            return Buffer.from(
-              JSON.stringify({
-                description: process.env.npm_package_description,
-                version: process.env.npm_package_version,
-                ...JSON.parse(manifestContents),
-              })
-            );
+            const manifestObj = {
+              description: process.env.npm_package_description,
+              version: process.env.npm_package_version,
+              ...JSON.parse(manifestContents),
+            };
+
+            if (env.NODE_ENV !== 'development') {
+              // Remove the host_permissions as this is just used for reloading
+              delete manifestObj['host_permissions'];
+
+              // remove the source maps
+              manifestObj['web_accessible_resources'] = manifestObj[
+                'web_accessible_resources'
+              ].map((web_accessible_resource) => {
+                return {
+                  ...web_accessible_resource,
+                  resources: web_accessible_resource['resources'].filter(
+                    (resource) => !resource.endsWith('js.map')
+                  ),
+                };
+              });
+            }
+
+            return Buffer.from(JSON.stringify(manifestObj));
           },
         },
       ],
