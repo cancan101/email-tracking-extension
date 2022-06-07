@@ -32,7 +32,7 @@ const extensionId = document.currentScript?.dataset.extensionId ?? '';
 const baseUrl = process.env.EMAIL_TRACKING_BACKEND_URL;
 const imageBaseUrl = `${baseUrl}/t`;
 const reportUrl = `${baseUrl}/api/v1/trackers/`;
-const infoUrl = `${baseUrl}/info`;
+const infoUrl = `${baseUrl}/api/v1/threads/:threadId/views/`;
 const dashboardUrl = `${baseUrl}/api/v1/views/`;
 const loginUrl = `${baseUrl}/api/v1/login/request-magic`;
 
@@ -131,11 +131,10 @@ const showThreadViews = (views: View[] | null) => {
 
 const getThreadViews = async (threadId: string): Promise<View[] | null> => {
   try {
-    const resp = await fetchAuth(`${infoUrl}?threadId=${threadId}`);
+    const resp = await fetchAuth(infoUrl.replace(':threadId', threadId));
     if (resp.ok) {
-      const data = await resp.json();
-      const { views } = data;
-      return views;
+      const responseData = await resp.json();
+      return responseData.data ?? null;
     }
   } catch (e) {
     console.log(e);
