@@ -60,7 +60,10 @@ async function processQsLogin() {
     console.log('Error with fetch. Received:', resp.status);
     return;
   }
+
   const data = await resp.json();
+
+  // Theoretically we could resolve some of these with a call to API
   const accessToken = data['accessToken'];
   const expiresIn = data['expiresIn'];
   const emailAccount = data['emailAccount'];
@@ -69,7 +72,9 @@ async function processQsLogin() {
   if (accessToken && expiresIn && emailAccount && trackingSlug) {
     processLogin(accessToken, expiresIn, emailAccount, trackingSlug);
   } else {
-    console.log('Missing accessToken or expiresIn');
+    console.log(
+      'Missing accessToken, expiresIn, emailAccount, or trackingSlug'
+    );
     return;
   }
 }

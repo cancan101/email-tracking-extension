@@ -26,6 +26,7 @@ export default function LoginButton({
     }
     setLoginState('REQUESTING');
     await requestLogin();
+    // handle requestLogin failing
     setLoginState('REQUESTED');
   };
 
@@ -39,6 +40,7 @@ export default function LoginButton({
     ? { display: 'none' }
     : { marginLeft: '12px', marginRight: '12px' };
 
+  // we should pass a sync function to onClick
   return (
     <div style={style} onClick={doLogin}>
       {label}

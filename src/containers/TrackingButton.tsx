@@ -8,6 +8,10 @@ import { View } from '../types';
 dayjs.extend(relativeTime);
 // -------------------------------------------------
 
+const POLL_INTERVAL_SEC = 10;
+
+// -------------------------------------------------
+
 export default function TrackingButton({
   getUserViews,
   renderTrackingInfo,
@@ -34,7 +38,7 @@ export default function TrackingButton({
       }
     };
     update();
-    const handle = setInterval(update, 10000);
+    const handle = setInterval(update, POLL_INTERVAL_SEC * 1000);
     return () => {
       clearInterval(handle);
     };
