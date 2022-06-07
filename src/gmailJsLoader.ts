@@ -370,80 +370,118 @@ gmail.observe.on('load', () => {
     setupLogin();
   }, 500);
 
+  type ReportData = {
+    emailId: string;
+    threadId: string;
+    trackId: string;
+    emailSubject: string;
+    scheduledTimestamp?: number;
+  };
+
+  async function processSend(
+    body: string,
+    data: any,
+    xhr: XMLHttpRequest,
+    isScheduled: boolean
+  ) {
+    if (xhr.readyState === 4 && xhr.status === 0) {
+      console.log('Issue with send');
+      return;
+    }
+
+    const emailId = data.id;
+    console.log('Email ID:', emailId);
+
+    // const threadId = response[2]?.[6]?.[0]?.[1]?.[1];
+    const threadId = JSON.parse(body)[2]?.[1]?.[0]?.[2]?.[1];
+    // console.log('Thread ID:', threadId);
+
+    const emailSubject = data.subject;
+    console.log('emailSubject:', emailSubject);
+
+    const parser = new DOMParser();
+    const document = parser.parseFromString(data.content_html, 'text/html');
+    const trackers = document.getElementsByClassName('tracker-img');
+
+    const urls = Array.from(trackers)
+      .map((el) => (el instanceof HTMLElement ? el.dataset.src : null))
+      .filter((src) => !!src && src.startsWith(imageBaseUrl)) as string[];
+
+    // console.log(
+    //   Array.from(trackers).map((el) =>
+    //     el instanceof HTMLImageElement ? el.dataset.src : null
+    //   )
+    // );
+
+    // 38 is length of uuid
+    const trackIds = urls.map((src) =>
+      src.slice(imageBaseUrl.length + 38, -'image.gif'.length - 1)
+    );
+
+    if (trackIds.length > 0) {
+      console.log('trackers:', trackIds, ids);
+
+      // figure out if we want to send all trackers or just one
+      const trackId = trackIds[trackIds.length - 1];
+      const trackIdIdx = ids.indexOf(trackId);
+
+      console.log('trackId:', trackId, 'trackIdIdx', trackIdIdx);
+
+      if (trackIdIdx >= 0) {
+        ids.splice(trackIdIdx, 1);
+      } else {
+        throw Error('Unknown trackerId');
+      }
+
+      const reportData: ReportData = {
+        emailId,
+        threadId,
+        trackId,
+        emailSubject,
+      };
+
+      if (isScheduled) {
+        reportData['scheduledTimestamp'] = data.timestamp as number;
+      }
+
+      try {
+        // TODO: do this in then
+        await fetchAuth(reportUrl, {
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          method: 'POST',
+          body: JSON.stringify(reportData),
+        });
+      } catch (e) {
+        console.log(e);
+      }
+    } else {
+      console.log('No trackers found in email');
+    }
+  }
+
+  gmail.observe.after(
+    'send_scheduled_message',
+    async function (
+      url: string,
+      body: string,
+      data: any,
+      response: any,
+      xhr: XMLHttpRequest
+    ) {
+      console.log('send_scheduled_message...');
+
+      await processSend(body, data, xhr, true);
+    }
+  );
+
   gmail.observe.after(
     'send_message',
     async function (url, body, data, response, xhr): Promise<void> {
-      if (xhr.readyState === 4 && xhr.status === 0) {
-        console.log('Issue with send');
-        return;
-      }
+      console.log('send_message...');
 
-      const emailId = data.id;
-      console.log('Email ID:', emailId);
-
-      // const threadId = response[2]?.[6]?.[0]?.[1]?.[1];
-      const threadId = JSON.parse(body)[2]?.[1]?.[0]?.[2]?.[1];
-      // console.log('Thread ID:', threadId);
-
-      const emailSubject = data.subject;
-      console.log('emailSubject:', emailSubject);
-
-      const parser = new DOMParser();
-      const document = parser.parseFromString(data.content_html, 'text/html');
-      const trackers = document.getElementsByClassName('tracker-img');
-
-      const urls = Array.from(trackers)
-        .map((el) => (el instanceof HTMLElement ? el.dataset.src : null))
-        .filter((src) => !!src && src.startsWith(imageBaseUrl)) as string[];
-
-      // console.log(
-      //   Array.from(trackers).map((el) =>
-      //     el instanceof HTMLImageElement ? el.dataset.src : null
-      //   )
-      // );
-
-      // 38 is length of uuid
-      const trackIds = urls.map((src) =>
-        src.slice(imageBaseUrl.length + 38, -'image.gif'.length - 1)
-      );
-
-      if (trackIds.length > 0) {
-        console.log('trackers:', trackIds, ids);
-
-        // figure out if we want to send all trackers or just one
-        const trackId = trackIds[trackIds.length - 1];
-        const trackIdIdx = ids.indexOf(trackId);
-
-        console.log('trackId:', trackId, 'trackIdIdx', trackIdIdx);
-
-        if (trackIdIdx >= 0) {
-          ids.splice(trackIdIdx, 1);
-        } else {
-          throw Error('Unknown trackerId');
-        }
-
-        const reportData = {
-          emailId,
-          threadId,
-          trackId,
-          emailSubject,
-        };
-
-        try {
-          // TODO: do this in then
-          await fetchAuth(reportUrl, {
-            headers: {
-              'Content-Type': 'application/json',
-            },
-            method: 'POST',
-            body: JSON.stringify(reportData),
-          });
-        } catch (e) {
-          console.log(e);
-        }
-      } else {
-        console.log('No trackers found in email');
-      }
+      await processSend(body, data, xhr, false);
     }
   );
 });
@@ -455,6 +493,53 @@ gmail.observe.on('compose', function (compose, _) {
   }
 
   // TODO(cancan101): figure out if the window is re-opened due to a failed send
+  setTimeout(() => {
+    const scheduledSend = compose.find('.J-N.yr').first()[0];
+
+    gmail.tools.add_more_send_option(
+      compose,
+      'Scheduled Track',
+      () => {
+        console.log('Track requested (scheduled send)!');
+
+        injectTracking();
+
+        scheduledSend.dispatchEvent(
+          new MouseEvent('mouseenter', { bubbles: true })
+        );
+        scheduledSend.dispatchEvent(
+          new MouseEvent('mousedown', { bubbles: true })
+        );
+        scheduledSend.dispatchEvent(
+          new MouseEvent('mouseup', { bubbles: true })
+        );
+      },
+      undefined,
+      'v5'
+    );
+  }, 0);
+
+  function injectTracking() {
+    const trackId = uuidv4();
+    console.log(`Using id: ${trackId}`);
+
+    const trackingSlug = useStore.getState().userInfo?.trackingSlug;
+    if (trackingSlug === undefined) {
+      throw new Error('No trackingSlug');
+    }
+
+    // TODO use lib here:
+    const url = `${imageBaseUrl}/${trackingSlug}/${trackId}/image.gif`;
+
+    // let trackingPixelHtml = `<img src="${url}" loading="lazy" height="0" width="0" style="border:0; width:0; height:0; overflow:hidden; display:none !important;" class="tracker-img">`;
+    const trackingPixelHtml = `<div height="1" width="1" style="background-image: url('${url}');" data-src="${url}" class="tracker-img"></div>`;
+
+    const mail_body = compose.body();
+    // TODO(cancan101): remove old trackers
+    compose.body(mail_body + trackingPixelHtml);
+
+    ids.push(trackId);
+  }
 
   gmail.tools.add_compose_button(
     compose,
@@ -462,25 +547,7 @@ gmail.observe.on('compose', function (compose, _) {
     () => {
       console.log('Track requested!');
 
-      const trackId = uuidv4();
-      console.log(`Using id: ${trackId}`);
-
-      const trackingSlug = useStore.getState().userInfo?.trackingSlug;
-      if (trackingSlug === undefined) {
-        throw new Error('No trackingSlug');
-      }
-
-      // TODO use lib here:
-      const url = `${imageBaseUrl}/${trackingSlug}/${trackId}/image.gif`;
-
-      // let trackingPixelHtml = `<img src="${url}" loading="lazy" height="0" width="0" style="border:0; width:0; height:0; overflow:hidden; display:none !important;" class="tracker-img">`;
-      const trackingPixelHtml = `<div height="1" width="1" style="background-image: url('${url}');" data-src="${url}" class="tracker-img"></div>`;
-
-      const mail_body = compose.body();
-      // TODO(cancan101): remove old trackers
-      compose.body(mail_body + trackingPixelHtml);
-
-      ids.push(trackId);
+      injectTracking();
 
       compose.send();
     },
