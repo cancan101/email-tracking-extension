@@ -31,10 +31,10 @@ const extensionId = document.currentScript?.dataset.extensionId ?? '';
 
 const baseUrl = process.env.EMAIL_TRACKING_BACKEND_URL;
 const imageBaseUrl = `${baseUrl}/t`;
-const reportUrl = `${baseUrl}/report`;
+const reportUrl = `${baseUrl}/api/v1/trackers/`;
 const infoUrl = `${baseUrl}/info`;
-const dashboardUrl = `${baseUrl}/dashboard`;
-const loginUrl = `${baseUrl}/login/magic`;
+const dashboardUrl = `${baseUrl}/api/v1/views/`;
+const loginUrl = `${baseUrl}/api/v1/login/request-magic`;
 
 const btnTrackingClass = 'btn-tracking';
 const btnLoginClass = 'btn-login';
@@ -267,9 +267,9 @@ async function getUserViews(): Promise<View[] | null> {
   }
   const resp = await fetchAuth(`${dashboardUrl}?userId=${userId}`);
   if (resp.ok) {
-    const data = await resp.json();
-    if (data.views !== null) {
-      const allViews = data.views as View[];
+    const respData = await resp.json();
+    if (respData.data !== null) {
+      const allViews = respData.data as View[];
       return allViews.slice(0, 10);
     }
   }
