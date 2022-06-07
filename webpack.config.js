@@ -6,6 +6,14 @@ var webpack = require('webpack'),
   HtmlWebpackPlugin = require('html-webpack-plugin'),
   TerserPlugin = require('terser-webpack-plugin');
 var { CleanWebpackPlugin } = require('clean-webpack-plugin');
+const Dotenv = require('dotenv-webpack');
+const dotenv = require('dotenv');
+
+// -------------------------------------------------
+
+dotenv.config();
+
+// -------------------------------------------------
 
 const ASSET_PATH = process.env.ASSET_PATH || '/';
 
@@ -36,16 +44,15 @@ if (fileSystem.existsSync(secretsPath)) {
 var options = {
   mode: process.env.NODE_ENV || 'development',
   entry: {
-    newtab: path.join(__dirname, 'src', 'pages', 'Newtab', 'index.jsx'),
     options: path.join(__dirname, 'src', 'pages', 'Options', 'index.jsx'),
     popup: path.join(__dirname, 'src', 'pages', 'Popup', 'index.jsx'),
-    background: path.join(__dirname, 'src', 'pages', 'Background', 'index.js'),
-    contentScript: path.join(__dirname, 'src', 'pages', 'Content', 'index.js'),
-    devtools: path.join(__dirname, 'src', 'pages', 'Devtools', 'index.js'),
-    panel: path.join(__dirname, 'src', 'pages', 'Panel', 'index.jsx'),
+    background: path.join(__dirname, 'src', 'pages', 'Background', 'index.ts'),
+    contentScript: path.join(__dirname, 'src', 'pages', 'Content', 'index.ts'),
+    gmailJsLoader: path.join(__dirname, 'src', 'gmailJsLoader.ts'),
+    login: path.join(__dirname, 'src', 'login.ts'),
   },
   chromeExtensionBoilerplate: {
-    notHotReload: ['background', 'contentScript', 'devtools'],
+    notHotReload: ['background', 'contentScript', 'gmailJsLoader', 'login'],
   },
   output: {
     filename: '[name].bundle.js',
@@ -110,6 +117,7 @@ var options = {
       .concat(['.js', '.jsx', '.ts', '.tsx', '.css']),
   },
   plugins: [
+    new Dotenv(),
     new CleanWebpackPlugin({ verbose: false }),
     new webpack.ProgressPlugin(),
     // expose and write the allowed env vars on the compiled bundle
@@ -121,14 +129,38 @@ var options = {
           to: path.join(__dirname, 'build'),
           force: true,
           transform: function (content, path) {
-            // generates the manifest file using the package.json informations
-            return Buffer.from(
-              JSON.stringify({
-                description: process.env.npm_package_description,
-                version: process.env.npm_package_version,
-                ...JSON.parse(content.toString()),
-              })
-            );
+            // generates the manifest file using the package.json information
+            const manifestContents = content
+              .toString()
+              .replaceAll(
+                '__EMAIL_TRACKING_BACKEND_URL__',
+                process.env.EMAIL_TRACKING_BACKEND_URL
+              );
+
+            const manifestObj = {
+              description: process.env.npm_package_description,
+              version: process.env.npm_package_version,
+              ...JSON.parse(manifestContents),
+            };
+
+            if (env.NODE_ENV !== 'development') {
+              // Remove the host_permissions as this is just used for reloading
+              delete manifestObj['host_permissions'];
+
+              // remove the source maps
+              manifestObj['web_accessible_resources'] = manifestObj[
+                'web_accessible_resources'
+              ].map((web_accessible_resource) => {
+                return {
+                  ...web_accessible_resource,
+                  resources: web_accessible_resource['resources'].filter(
+                    (resource) => !resource.endsWith('js.map')
+                  ),
+                };
+              });
+            }
+
+            return Buffer.from(JSON.stringify(manifestObj));
           },
         },
       ],
@@ -139,6 +171,21 @@ var options = {
           from: 'src/pages/Content/content.styles.css',
           to: path.join(__dirname, 'build'),
           force: true,
+          transform: function (content, path) {
+            return Buffer.from(
+              content
+                .toString()
+                .replaceAll(
+                  '__EMAIL_TRACKING_BACKEND_URL__',
+                  process.env.EMAIL_TRACKING_BACKEND_URL
+                )
+                .replaceAll(
+                  '__EMAIL_TRACKING_BACKEND_URL_OLD__',
+                  process.env.EMAIL_TRACKING_BACKEND_URL_OLD ||
+                    process.env.EMAIL_TRACKING_BACKEND_URL
+                )
+            );
+          },
         },
       ],
     }),
@@ -161,12 +208,6 @@ var options = {
       ],
     }),
     new HtmlWebpackPlugin({
-      template: path.join(__dirname, 'src', 'pages', 'Newtab', 'index.html'),
-      filename: 'newtab.html',
-      chunks: ['newtab'],
-      cache: false,
-    }),
-    new HtmlWebpackPlugin({
       template: path.join(__dirname, 'src', 'pages', 'Options', 'index.html'),
       filename: 'options.html',
       chunks: ['options'],
@@ -176,18 +217,6 @@ var options = {
       template: path.join(__dirname, 'src', 'pages', 'Popup', 'index.html'),
       filename: 'popup.html',
       chunks: ['popup'],
-      cache: false,
-    }),
-    new HtmlWebpackPlugin({
-      template: path.join(__dirname, 'src', 'pages', 'Devtools', 'index.html'),
-      filename: 'devtools.html',
-      chunks: ['devtools'],
-      cache: false,
-    }),
-    new HtmlWebpackPlugin({
-      template: path.join(__dirname, 'src', 'pages', 'Panel', 'index.html'),
-      filename: 'panel.html',
-      chunks: ['panel'],
       cache: false,
     }),
   ],
