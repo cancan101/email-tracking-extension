@@ -109,12 +109,6 @@ gmail.observe.register('popout_thread', popoutThreadConfig);
   }
 );
 
-gmail.observe.on('view_email', function (domEmail) {
-  console.log('Email opened with ID', domEmail.id);
-  const emailData = gmail.new.get.email_data(domEmail);
-  console.log('Email data:', emailData);
-});
-
 const closeModal = () => {
   unmountComponentAtNode(jQuery('#gmailJsModalWindowContent')[0]);
   gmail.tools.remove_modal_window();
@@ -191,7 +185,6 @@ const setupInThread = (threadId: string) => {
 
 gmail.observe.on('view_thread', function (obj) {
   const threadElem = obj
-    // https://github.com/KartikTalwar/gmail.js/pull/697
     .dom()[0]
     .querySelector<HTMLElement>('[data-thread-perm-id]');
   if (threadElem) {

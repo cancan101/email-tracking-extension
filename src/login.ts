@@ -11,10 +11,11 @@ function processLogin(
 ) {
   const expiresAt = new Date().getTime() / 1000 + expiresIn;
   console.log(
-    'Saving accessToken and expiresAt',
+    'processLogin for:',
     emailAccount,
+    'expiresAt:',
     expiresAt,
-    expiresIn,
+    'slug:',
     trackingSlug
   );
 
