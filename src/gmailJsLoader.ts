@@ -511,14 +511,19 @@ gmail.observe.on('compose', function (compose, _) {
     );
   }, 0);
 
+  let wasInjected = false;
   function injectTracking() {
-    const trackId = uuidv4();
-    console.log(`Using id: ${trackId}`);
-
+    if (wasInjected) {
+      console.log('We already injected in this compose');
+      return;
+    }
     const trackingSlug = useStore.getState().userInfo?.trackingSlug;
     if (trackingSlug === undefined) {
       throw new Error('No trackingSlug');
     }
+
+    const trackId = uuidv4();
+    console.log(`Using id: ${trackId}`);
 
     // TODO use lib here:
     const url = `${imageBaseUrl}/${trackingSlug}/${trackId}/image.gif`;
@@ -531,6 +536,7 @@ gmail.observe.on('compose', function (compose, _) {
     compose.body(mail_body + trackingPixelHtml);
 
     ids.push(trackId);
+    wasInjected = true;
   }
 
   gmail.tools.add_compose_button(
