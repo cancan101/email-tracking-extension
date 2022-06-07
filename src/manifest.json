@@ -22,7 +22,7 @@
       "run_at": "document_start"
     },
     {
-      "matches": ["__EMAIL_TRACKING_BACKEND_URL__/login"],
+      "matches": ["__EMAIL_TRACKING_BACKEND_URL__/magic-login?token=*"],
       "js": ["login.bundle.js"]
     }
   ],

@@ -1,3 +1,8 @@
+const baseUrl = process.env.EMAIL_TRACKING_BACKEND_URL;
+const useMagicUrl = `${baseUrl}/api/v1/login/use-magic`;
+
+// -------------------------------------------------
+
 function processLogin(
   accessToken: string,
   expiresIn: number,
@@ -24,38 +29,48 @@ function processLogin(
     .then(() => {
       chrome.runtime.sendMessage({ your: 'LOGIN_IN', emailAccount });
 
-      window.location.hash = '';
-      window.location.pathname = '/logged-in';
+      const loggedInUrl = new URL(window.location.toString());
+      loggedInUrl.pathname = '/logged-in';
+      loggedInUrl.search = '';
+
+      window.location.replace(loggedInUrl);
     })
     .catch((e) => {
       console.error(e);
     });
 }
 
-function processHashLogin() {
-  console.log('Logging in...');
-  // FIXME(cancan101): this is mega insecure and can have values injected.
-  if (window.location.hash.charAt(0) === '#') {
-    const loginPayloadStr = window.location.hash.slice(1);
+async function processQsLogin() {
+  const queryParams = new URLSearchParams(window.location.search);
+  const token = queryParams.get('token');
+  if (!token) {
+    console.log('Missing token');
+    return;
+  }
+  const resp = await fetch(useMagicUrl, {
+    headers: {
+      'Content-Type': 'application/json',
+    },
+    method: 'POST',
+    body: JSON.stringify({ token }),
+  });
 
-    const data = new URLSearchParams(loginPayloadStr);
+  if (!resp.ok) {
+    console.log('Error with fetch. Received:', resp.status);
+    return;
+  }
+  const data = await resp.json();
+  const accessToken = data['accessToken'];
+  const expiresIn = data['expiresIn'];
+  const emailAccount = data['emailAccount'];
+  const trackingSlug = data['trackingSlug'];
 
-    const accessToken = data.get('accessToken');
-    const expiresInStr = data.get('expiresIn');
-    const emailAccount = data.get('emailAccount');
-    const trackingSlug = data.get('trackingSlug');
-
-    if (accessToken && expiresInStr && emailAccount && trackingSlug) {
-      const expiresIn = parseInt(expiresInStr, 10);
-      processLogin(accessToken, expiresIn, emailAccount, trackingSlug);
-    } else {
-      console.log('Missing accessToken or expiresIn');
-      return;
-    }
+  if (accessToken && expiresIn && emailAccount && trackingSlug) {
+    processLogin(accessToken, expiresIn, emailAccount, trackingSlug);
   } else {
-    console.log('Missing hash');
+    console.log('Missing accessToken or expiresIn');
     return;
   }
 }
 
-processHashLogin();
+processQsLogin();
