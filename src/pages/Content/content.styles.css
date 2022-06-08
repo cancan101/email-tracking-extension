@@ -1,33 +1,33 @@
 .tracker-mail-tracked {
-    background-color: red !important;
+  background-color: red !important;
 }
 
 /* On Self-open (Legacy URL) */
-div[style*="__EMAIL_TRACKING_BACKEND_URL_OLD__/image.gif"][height="1"][width="1"] {
-    display: none !important;
+div[style*='__EMAIL_TRACKING_BACKEND_URL_OLD__/image.gif'][height='1'][width='1'] {
+  display: none !important;
 }
 
 /* On Self-open */
-div[style*="__EMAIL_TRACKING_BACKEND_URL_OLD__/t/"][style*="image.gif"][height="1"][width="1"] {
-    display: none !important;
+div[style*='__EMAIL_TRACKING_BACKEND_URL_OLD__/t/'][style*='image.gif'][height='1'][width='1'] {
+  display: none !important;
 }
 
 /* On Self-open (Legacy URL) */
-div[style*="__EMAIL_TRACKING_BACKEND_URL__/image.gif"][height="1"][width="1"] {
-    display: none !important;
+div[style*='__EMAIL_TRACKING_BACKEND_URL__/image.gif'][height='1'][width='1'] {
+  display: none !important;
 }
 
 /* On Self-open */
-div[style*="__EMAIL_TRACKING_BACKEND_URL__/t/"][style*="image.gif"][height="1"][width="1"] {
-    display: none !important;
+div[style*='__EMAIL_TRACKING_BACKEND_URL__/t/'][style*='image.gif'][height='1'][width='1'] {
+  display: none !important;
 }
 
 /* On Compose / Send */
 .tracker-img {
-    display: none !important;
+  display: none !important;
 }
 
 .btn-manageMargin {
-    margin-left: 0px !important;
-    margin-right: 0px !important;
+  margin-left: 0px !important;
+  margin-right: 0px !important;
 }
