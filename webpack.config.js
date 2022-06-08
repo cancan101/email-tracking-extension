@@ -145,7 +145,7 @@ var options = {
 
             if (env.NODE_ENV !== 'development') {
               // Remove the host_permissions as this is just used for reloading
-              delete manifestObj['host_permissions'];
+              // delete manifestObj['host_permissions'];
 
               // remove the source maps
               manifestObj['web_accessible_resources'] = manifestObj[
