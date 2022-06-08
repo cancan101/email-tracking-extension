@@ -3,3 +3,5 @@ tsconfig.json
 
 build
 package
+
+.eslintcache
