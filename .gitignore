@@ -22,3 +22,5 @@ secrets.*.js
 
 # env
 .env
+
+.vscode
