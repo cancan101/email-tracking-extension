@@ -2,9 +2,7 @@
   "manifest_version": 3,
   "name": "Email Open Tracking",
   "short_name": "gmailopentrack",
-  "version": "0.12",
   "author": "Alex Rothberg <agrothberg@gmail.com>",
-  "description": "A chrome extension to orchestrate email open track from Gmail",
   "options_page": "options.html",
   "action": {
     "default_popup": "popup.html",
