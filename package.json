@@ -14,7 +14,9 @@
     "start": "node utils/webserver.js",
     "prettier": "prettier --write '**/*.{js,jsx,ts,tsx,json,css,scss,md}'",
     "test": "npm run lint",
-    "lint": "npx prettier --check .",
+    "lint:prettier": "npx prettier --check .",
+    "lint:eslint": "npx eslint --cache src",
+    "lint": "npm run lint:prettier && npm run lint:eslint",
     "prepare": "husky install"
   },
   "dependencies": {
