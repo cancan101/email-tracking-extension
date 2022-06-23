@@ -40,6 +40,12 @@ chrome.runtime.onMessage.addListener(function (request, sender, sendResponse) {
   if (request.your === 'LOGIN_IN') {
     console.log('receive login');
     notifyLogin(request.emailAccount);
+
+    // Close the tab automatically
+    const tabId = sender.tab?.id;
+    if (tabId !== undefined) {
+      chrome.tabs.remove([tabId]);
+    }
   } else if (request.your === 'LOG_OUT') {
     console.log('receive logout');
     notifyLogout();
