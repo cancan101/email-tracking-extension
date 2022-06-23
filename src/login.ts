@@ -30,6 +30,7 @@ function processLogin(
     .then(() => {
       chrome.runtime.sendMessage({ your: 'LOGIN_IN', emailAccount });
 
+      // We do a redirect here to a notification page but we also attempt to automatically close the tab from the background
       const loggedInUrl = new URL(window.location.toString());
       loggedInUrl.pathname = '/logged-in';
       loggedInUrl.search = '';
@@ -78,5 +79,5 @@ async function processQsLogin() {
     return;
   }
 }
-
+// This currently runs unconditionally
 processQsLogin();
