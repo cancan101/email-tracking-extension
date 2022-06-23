@@ -144,7 +144,9 @@ var options = {
             };
 
             if (env.NODE_ENV !== 'development') {
-              // Remove the host_permissions as this is just used for reloading
+              // host_permissions is used for reloading
+              // which we use both for login and for extension updates
+              // For now this does seem helpful on login
               // delete manifestObj['host_permissions'];
 
               // remove the source maps
