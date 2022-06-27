@@ -13,12 +13,15 @@ import TrackingButton from './containers/TrackingButton';
 import ThreadTrackingButton from './containers/ThreadTrackingButton';
 import useStore from './containers/store';
 import { View } from './types';
+import './sentry';
 
 // import style required for TS to work
 const GmailFactory = require('gmail-js');
 
 // -------------------------------------------------
+
 dayjs.extend(localizedFormat);
+
 // -------------------------------------------------
 
 // required to make TS happy
