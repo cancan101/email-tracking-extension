@@ -1,9 +1,12 @@
 import * as Sentry from '@sentry/react';
 
+import { sentryTunnel, sentryDsn } from '../../settings';
+
 // -------------------------------------------------
 
 Sentry.init({
-  dsn: process.env.SENTRY_DSN,
+  dsn: sentryDsn,
+  tunnel: sentryTunnel,
 
   // Set tracesSampleRate to 1.0 to capture 100%
   // of transactions for performance monitoring.

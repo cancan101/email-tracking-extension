@@ -1,11 +1,13 @@
 import * as Sentry from '@sentry/react';
 import { BrowserTracing } from '@sentry/tracing';
 
+import { sentryTunnel, sentryDsn } from './settings';
+
 // -------------------------------------------------
 
 Sentry.init({
-  dsn: process.env.SENTRY_DSN,
-  tunnel: `${process.env.EMAIL_TRACKING_BACKEND_URL}/api/v1/stunnel`,
+  dsn: sentryDsn,
+  tunnel: sentryTunnel,
   integrations: [new BrowserTracing()],
 
   // Set tracesSampleRate to 1.0 to capture 100%
