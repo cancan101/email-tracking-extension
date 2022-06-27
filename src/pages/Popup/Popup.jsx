@@ -1,5 +1,9 @@
 import React, { useState } from 'react';
+
 import './Popup.css';
+import '../../sentry';
+
+// -------------------------------------------------
 
 const Popup = () => {
   const [isLoggingOut, setLoggingOut] = useState(false);

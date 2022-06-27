@@ -1,3 +1,7 @@
+import './sentry';
+
+// -------------------------------------------------
+
 const baseUrl = process.env.EMAIL_TRACKING_BACKEND_URL;
 const useMagicUrl = `${baseUrl}/api/v1/login/use-magic`;
 
@@ -43,6 +47,8 @@ function processLogin(
 }
 
 async function processQsLogin() {
+  console.log('processQsLogin');
+
   const queryParams = new URLSearchParams(window.location.search);
   const token = queryParams.get('token');
   if (!token) {
