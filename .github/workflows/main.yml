@@ -6,6 +6,10 @@ on:
 jobs:
   build:
     runs-on: ubuntu-latest
+    env:
+      EMAIL_TRACKING_BACKEND_URL: ${{ secrets.EMAIL_TRACKING_BACKEND_URL }}
+      EMAIL_TRACKING_BACKEND_URL_OLD: ${{ secrets.EMAIL_TRACKING_BACKEND_URL_OLD }}
+      SENTRY_DSN: ${{ secrets.SENTRY_DSN }}
     steps:
       - uses: actions/checkout@v3
       - uses: actions/setup-node@v3
