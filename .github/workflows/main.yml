@@ -13,7 +13,10 @@ jobs:
           # https://github.com/actions/setup-node/issues/467
           node-version: 18
           cache: 'npm'
-      - run: mkdir node_modules && npm ci
+      - run: |
+          mkdir node_modules
+          ls .
+          npm ci
       - run: npm test
       - run: |
           npm run build
