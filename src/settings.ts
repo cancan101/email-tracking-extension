@@ -5,6 +5,7 @@ declare var SENTRY_RELEASE: string;
 const sentryTunnel = `${process.env.EMAIL_TRACKING_BACKEND_URL}/api/v1/stunnel`;
 const sentryDsn = process.env.SENTRY_DSN;
 const sentryRelease = SENTRY_RELEASE;
+const sentryEnabled = !process.env.SENTRY_DISABLED;
 
 const sentrySettings: BrowserOptions = {
   dsn: sentryDsn,
@@ -16,4 +17,4 @@ const sentrySettings: BrowserOptions = {
   release: sentryRelease,
 };
 
-export { sentrySettings };
+export { sentrySettings, sentryEnabled };
