@@ -12,6 +12,7 @@ function InboxViewListItem({
 }) {
   return (
     <li
+      className="link-like"
       onClick={() => {
         window.location.hash = `#all/${new GmailUrlDecoder().encode(
           view.tracker.threadId
@@ -19,8 +20,12 @@ function InboxViewListItem({
         closeModal();
       }}
     >
-      <FormatView view={view} /> (
-      {view.tracker.emailSubject || view.tracker.threadId})
+      <div className="ellipsis-overflow bolder">
+        {view.tracker.emailSubject || view.tracker.threadId}
+      </div>
+      <div>
+        <FormatView view={view} />
+      </div>
     </li>
   );
 }
