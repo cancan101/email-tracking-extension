@@ -1,11 +1,13 @@
 import * as Sentry from '@sentry/react';
 import { BrowserTracing } from '@sentry/tracing';
 
-import { sentrySettings } from './settings';
+import { sentrySettings, sentryEnabled } from './settings';
 
 // -------------------------------------------------
 
-Sentry.init({
-  ...sentrySettings,
-  integrations: [new BrowserTracing()],
-});
+if (sentryEnabled) {
+  Sentry.init({
+    ...sentrySettings,
+    integrations: [new BrowserTracing()],
+  });
+}

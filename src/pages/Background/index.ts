@@ -1,12 +1,14 @@
 import * as Sentry from '@sentry/react';
 
-import { sentrySettings } from '../../settings';
+import { sentrySettings, sentryEnabled } from '../../settings';
 
 // -------------------------------------------------
 
-Sentry.init({
-  ...sentrySettings,
-});
+if (sentryEnabled) {
+  Sentry.init({
+    ...sentrySettings,
+  });
+}
 
 // -------------------------------------------------
 
