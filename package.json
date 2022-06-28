@@ -11,7 +11,7 @@
   "scripts": {
     "build": "node utils/build.js",
     "package": "node utils/package.js",
-    "start": "node utils/webserver.js",
+    "start": "VERSION=$(npx sentry-cli releases propose-version) node utils/webserver.js",
     "prettier": "prettier --write '**/*.{js,jsx,ts,tsx,json,css,scss,md}'",
     "test": "npm run lint",
     "lint:prettier": "npx prettier --check .",
@@ -21,6 +21,7 @@
   },
   "dependencies": {
     "@hot-loader/react-dom": "^17.0.2",
+    "@sentry/cli": "^2.2.0",
     "@sentry/react": "^7.3.0",
     "@sentry/tracing": "^7.3.0",
     "dayjs": "^1.11.3",

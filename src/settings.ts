@@ -2,7 +2,7 @@ import { BrowserOptions } from '@sentry/browser';
 
 const sentryTunnel = `${process.env.EMAIL_TRACKING_BACKEND_URL}/api/v1/stunnel`;
 const sentryDsn = process.env.SENTRY_DSN;
-const sentryRelease = undefined;
+const sentryRelease = process.env.VERSION;
 
 const sentrySettings: BrowserOptions = {
   dsn: sentryDsn,
