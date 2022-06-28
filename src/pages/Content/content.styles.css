@@ -31,3 +31,18 @@ div[style*='__EMAIL_TRACKING_BACKEND_URL__/t/'][style*='image.gif'][height='1'][
   margin-left: 0px !important;
   margin-right: 0px !important;
 }
+
+.link-like {
+  cursor: pointer;
+  /* text-decoration: underline; */
+}
+
+.ellipsis-overflow {
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.bolder {
+  font-weight: bolder;
+}
