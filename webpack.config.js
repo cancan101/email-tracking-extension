@@ -8,6 +8,7 @@ var webpack = require('webpack'),
 var { CleanWebpackPlugin } = require('clean-webpack-plugin');
 const Dotenv = require('dotenv-webpack');
 const dotenv = require('dotenv');
+const child_process = require('child_process');
 
 // -------------------------------------------------
 
@@ -122,6 +123,16 @@ var options = {
     new webpack.ProgressPlugin(),
     // expose and write the allowed env vars on the compiled bundle
     new webpack.EnvironmentPlugin(['NODE_ENV']),
+    new webpack.DefinePlugin({
+      SENTRY_RELEASE: webpack.DefinePlugin.runtimeValue(
+        () =>
+          `"${child_process
+            .execSync('npx sentry-cli releases propose-version', {
+              encoding: 'utf8',
+            })
+            .trim()}"`
+      ),
+    }),
     new CopyWebpackPlugin({
       patterns: [
         {
