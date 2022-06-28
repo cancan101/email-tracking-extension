@@ -15,8 +15,7 @@ jobs:
           cache: 'npm'
       - run: |
           mkdir node_modules
-          ls .
-          npm ci
+          npm ci --no-fund
       - run: npm test
       - run: |
           npm run build
