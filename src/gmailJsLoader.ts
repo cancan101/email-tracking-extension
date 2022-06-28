@@ -426,7 +426,7 @@ gmail.observe.on('load', () => {
         ids.splice(trackIdIdx, 1);
       } else {
         // If we send from popout we won't be tracking the trackerId
-        throw Error('Unknown trackerId');
+        // throw Error('Unknown trackerId');
       }
 
       const reportData: ReportData = {
