@@ -11,7 +11,7 @@
   "scripts": {
     "build": "node utils/build.js",
     "package": "node utils/package.js",
-    "start": "VERSION=$(npx sentry-cli releases propose-version) node utils/webserver.js",
+    "start": "node utils/webserver.js",
     "prettier": "prettier --write '**/*.{js,jsx,ts,tsx,json,css,scss,md}'",
     "test": "npm run lint",
     "lint:prettier": "npx prettier --check .",
