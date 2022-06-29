@@ -1,12 +1,24 @@
 import React from 'react';
 import FormatView from '../FormatView';
 import { View } from '../../types';
+import List from '@mui/material/List';
+import ListItem from '@mui/material/ListItem';
+import ListItemText from '@mui/material/ListItemText';
+import Box from '@mui/material/Box';
 
-function ThreadViewListItem({ view }: { view: View }) {
+function ThreadViewListItem({ view, pos }: { view: View; pos: number }) {
   return (
-    <li>
-      <FormatView view={view} />
-    </li>
+    <ListItem disablePadding>
+      <ListItemText
+        primary={
+          <>
+            {pos + 1}
+            {'. '}
+            <FormatView view={view} />
+          </>
+        }
+      ></ListItemText>
+    </ListItem>
   );
 }
 
@@ -17,10 +29,17 @@ export default function ThreadViewList({ views }: { views: View[] | null }) {
     return <div>No views yet for this thread</div>;
   }
   return (
-    <ol>
-      {views.map((view) => (
-        <ThreadViewListItem key={view.id} view={view} />
-      ))}
-    </ol>
+    <Box>
+      <List
+        dense
+        disablePadding
+        component="ol"
+        sx={{ overflow: 'auto', maxHeight: '75vh' }}
+      >
+        {views.map((view, pos) => (
+          <ThreadViewListItem key={view.id} view={view} pos={pos} />
+        ))}
+      </List>
+    </Box>
   );
 }
