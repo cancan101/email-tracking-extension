@@ -4,7 +4,6 @@ import { View } from '../../types';
 import List from '@mui/material/List';
 import ListItem from '@mui/material/ListItem';
 import ListItemText from '@mui/material/ListItemText';
-import Box from '@mui/material/Box';
 
 function ThreadViewListItem({ view, pos }: { view: View; pos: number }) {
   return (
@@ -22,6 +21,8 @@ function ThreadViewListItem({ view, pos }: { view: View; pos: number }) {
   );
 }
 
+const listMaxHeight = '75vh';
+
 export default function ThreadViewList({ views }: { views: View[] | null }) {
   if (views === null) {
     return <div>No tracking info found for this thread</div>;
@@ -29,17 +30,15 @@ export default function ThreadViewList({ views }: { views: View[] | null }) {
     return <div>No views yet for this thread</div>;
   }
   return (
-    <Box>
-      <List
-        dense
-        disablePadding
-        component="ol"
-        sx={{ overflow: 'auto', maxHeight: '75vh' }}
-      >
-        {views.map((view, pos) => (
-          <ThreadViewListItem key={view.id} view={view} pos={pos} />
-        ))}
-      </List>
-    </Box>
+    <List
+      dense
+      disablePadding
+      component="ol"
+      sx={{ overflow: 'auto', maxHeight: listMaxHeight }}
+    >
+      {views.map((view, pos) => (
+        <ThreadViewListItem key={view.id} view={view} pos={pos} />
+      ))}
+    </List>
   );
 }
