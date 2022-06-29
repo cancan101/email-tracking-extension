@@ -16,20 +16,22 @@ function InboxViewListItem({
   closeModal: Function;
   pos: number;
 }) {
+  // emailSubject may be an empty string
+  const emailLabel = view.tracker.emailSubject || view.tracker.threadId;
+  const threadPath = `#all/${new GmailUrlDecoder().encode(
+    view.tracker.threadId
+  )}`;
+
   return (
     <ListItem disablePadding>
       <ListItemButton
         onClick={() => {
-          window.location.hash = `#all/${new GmailUrlDecoder().encode(
-            view.tracker.threadId
-          )}`;
+          window.location.hash = threadPath;
           closeModal();
         }}
       >
         <ListItemText
-          primary={`${pos + 1}. ${
-            view.tracker.emailSubject || view.tracker.threadId
-          }`}
+          primary={`${pos + 1}. ${emailLabel}`}
           primaryTypographyProps={{ noWrap: true, variant: 'subtitle2' }}
           secondary={<FormatView view={view} />}
           secondaryTypographyProps={{ variant: 'caption' }}
