@@ -18,9 +18,9 @@ function InboxViewListItem({
 }) {
   // emailSubject may be an empty string
   const emailLabel = view.tracker.emailSubject || view.tracker.threadId;
-  const threadPath = `#all/${new GmailUrlDecoder().encode(
-    view.tracker.threadId
-  )}`;
+  // URLs use a different format for the threadId
+  const threadIdSlug = new GmailUrlDecoder().encode(view.tracker.threadId);
+  const threadPath = `#all/${threadIdSlug}`;
 
   return (
     <ListItem disablePadding>
