@@ -513,6 +513,26 @@ gmail.observe.on('compose', function (compose, _) {
       undefined,
       'v5'
     );
+
+    const secondarySend = compose
+      .dom()
+      .find('div.T-I.T-I-ax7.aoO:not(.gmailjscomposebutton)');
+
+    if (secondarySend.length > 0) {
+      gmail.tools.add_more_send_option(
+        compose,
+        'Track Send (no archive)',
+        () => {
+          console.log('Track requested (secondary send)!');
+
+          injectTracking();
+
+          secondarySend.click();
+        },
+        undefined,
+        'bq5'
+      );
+    }
   }, 0);
 
   let wasInjected = false;
