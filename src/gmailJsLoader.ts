@@ -371,6 +371,7 @@ gmail.observe.on('load', () => {
     trackId: string;
     emailSubject: string;
     scheduledTimestamp?: number;
+    selfLoadMitigation: boolean;
   };
 
   async function processSend(
@@ -429,11 +430,15 @@ gmail.observe.on('load', () => {
         // throw Error('Unknown trackerId');
       }
 
+      // We will assume this is always true
+      const selfLoadMitigation = true;
+
       const reportData: ReportData = {
         emailId,
         threadId,
         trackId,
         emailSubject,
+        selfLoadMitigation,
       };
 
       if (isScheduled) {
