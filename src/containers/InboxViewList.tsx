@@ -42,6 +42,8 @@ function InboxViewListItem({
   );
 }
 
+const listMaxHeight = '75vh';
+
 export default function InboxViewList({
   views,
   closeModal,
@@ -50,7 +52,12 @@ export default function InboxViewList({
   closeModal: Function;
 }) {
   return (
-    <List dense disablePadding component="ol">
+    <List
+      dense
+      disablePadding
+      component="ol"
+      sx={{ overflow: 'auto', maxHeight: listMaxHeight }}
+    >
       {views.map((view, pos) => (
         <InboxViewListItem
           key={view.id}

@@ -46,6 +46,10 @@ const btnManageMarginClass = 'btn-manageMargin';
 
 // -------------------------------------------------
 
+const INBOX_VIEW_LIST_MAX_SHOWN = 20;
+
+// -------------------------------------------------
+
 console.log(
   `Running gmailJsLoader w/ extensionId: ${extensionId}; baseUrl: ${baseUrl}`
 );
@@ -272,7 +276,7 @@ async function getUserViews(): Promise<View[] | null> {
     const respData = await resp.json();
     if (respData.data !== null) {
       const allViews = respData.data as View[];
-      return allViews.slice(0, 10);
+      return allViews.slice(0, INBOX_VIEW_LIST_MAX_SHOWN);
     }
   }
   return null;
