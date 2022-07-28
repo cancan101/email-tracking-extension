@@ -539,7 +539,7 @@ gmail.observe.on('compose', function (compose, _) {
           secondarySend.click();
         },
         undefined,
-        'bq5'
+        'bq5 move_to_inbox_googblue'
       );
     }
   }, 0);
