@@ -49,14 +49,14 @@ export default function TrackingButton({
       ? { display: 'none' }
       : { marginLeft: '12px', marginRight: '12px' };
 
-  let extra = '';
+  let message = 'Tracking';
   if (views != null && views.length > 0) {
-    extra = ` (${dayjs().to(dayjs(views[0].createdAt), false)})`;
+    message = `${message} (${dayjs().to(dayjs(views[0].createdAt), false)})`;
   }
 
   return (
     <div style={style} onClick={onClick}>
-      Tracking{extra}
+      {message}
     </div>
   );
 }
