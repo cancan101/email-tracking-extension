@@ -31,3 +31,13 @@ div[style*='__EMAIL_TRACKING_BACKEND_URL__/t/'][style*='image.gif'][height='1'][
   margin-left: 0px !important;
   margin-right: 0px !important;
 }
+
+.move_to_inbox_googblue {
+  background-image: url('https://www.gstatic.com/images/icons/material/system_gm/1x/move_to_inbox_googblue_20dp.png') !important;
+}
+
+@media (min-resolution: 144dpi), (-webkit-min-device-pixel-ratio: 1.5) {
+  .move_to_inbox_googblue {
+    background-image: url('https://www.gstatic.com/images/icons/material/system_gm/2x/move_to_inbox_googblue_20dp.png') !important;
+  }
+}
