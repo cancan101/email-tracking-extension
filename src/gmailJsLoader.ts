@@ -220,6 +220,7 @@ gmail.observe.on('view_thread', function (obj) {
 // -------------------------------------------------
 
 const ids: string[] = [];
+const messageToTracker = new Map<string, string>();
 
 // Listen for "login" notification
 window.addEventListener(
@@ -550,6 +551,13 @@ gmail.observe.on('compose', function (compose, _) {
       console.log('We already injected in this compose');
       return;
     }
+
+    const email_id = compose.email_id();
+    if (messageToTracker.has(email_id)) {
+      console.log('We already injected in this message');
+      return;
+    }
+
     const trackingSlug = useStore.getState().userInfo?.trackingSlug;
     if (trackingSlug === undefined) {
       throw new Error('No trackingSlug');
@@ -557,6 +565,8 @@ gmail.observe.on('compose', function (compose, _) {
 
     const trackId = uuidv4();
     console.log(`Using id: ${trackId}`);
+
+    messageToTracker.set(email_id, trackId);
 
     // TODO use lib here:
     const url = `${imageBaseUrl}/${trackingSlug}/${trackId}/image.gif`;
