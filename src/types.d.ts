@@ -3,6 +3,7 @@ import 'gmail-js';
 type GeoData = {
   city: string;
   region: string;
+  isMobile?: boolean;
 };
 
 type ClientIpGeo = {
