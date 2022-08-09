@@ -56,6 +56,18 @@ console.log(
 
 // -------------------------------------------------
 
+function getTrackerHTMLImg(url: string): string {
+  return `<img src="${url}" data-src="${url}" loading="lazy" height="1" width="1" style="border:0; width:1; height:1; overflow:hidden; display:none !important;" class="tracker-img">`;
+}
+
+function getTrackerHTMLBackground(url: string): string {
+  return `<div height="1" width="1" style="background-image: url('${url}');" data-src="${url}" class="tracker-img"></div>`;
+}
+
+function getTrackerHTML(url: string): string {
+  return getTrackerHTMLBackground(url);
+}
+
 function getAuthorization(): string | null {
   const accessToken = useStore.getState().getValidAccessToken();
   if (accessToken === null) {
@@ -571,10 +583,10 @@ gmail.observe.on('compose', function (compose, _) {
     // TODO use lib here:
     const url = `${imageBaseUrl}/${trackingSlug}/${trackId}/image.gif`;
 
-    // let trackingPixelHtml = `<img src="${url}" loading="lazy" height="0" width="0" style="border:0; width:0; height:0; overflow:hidden; display:none !important;" class="tracker-img">`;
-    const trackingPixelHtml = `<div height="1" width="1" style="background-image: url('${url}');" data-src="${url}" class="tracker-img"></div>`;
+    const trackingPixelHtml = getTrackerHTML(url);
 
     const mail_body = compose.body();
+
     // TODO(cancan101): remove old trackers
     compose.body(mail_body + trackingPixelHtml);
 
