@@ -2,7 +2,10 @@ import 'gmail-js';
 
 type GeoData = {
   city: string;
-  region: string;
+  region?: string;
+  regionCode: string;
+  country?: string;
+  countryCode: string;
   isMobile?: boolean;
 };
 

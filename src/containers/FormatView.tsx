@@ -14,9 +14,11 @@ export default function FormatView({
 
   if (clientIpGeo != null) {
     if (clientIpGeo.data != null) {
-      const extraLocaleTxt =
-        clientIpGeo.data.isMobile === true ? '; on mobile' : '';
-      ret = `${ret} (from: ${clientIpGeo.data.city}, ${clientIpGeo.data.region}${extraLocaleTxt})`;
+      const geoData = clientIpGeo.data;
+      const regionStr = geoData.region ?? geoData.regionCode;
+
+      const extraLocaleTxt = geoData.isMobile === true ? '; on mobile' : '';
+      ret = `${ret} (from: ${geoData.city}, ${regionStr}${extraLocaleTxt})`;
     }
     if (clientIpGeo.emailProvider != null) {
       ret = `${ret} (using: ${clientIpGeo.emailProvider})`;
