@@ -16,9 +16,16 @@ export default function FormatView({
     if (clientIpGeo.data != null) {
       const geoData = clientIpGeo.data;
       const regionStr = geoData.region ?? geoData.regionCode;
+      const countryStr = geoData.country ?? geoData.countryCode;
+
+      // Should be a config for "home country"
+      const isUS =
+        geoData.country === 'United States' || geoData.countryCode === 'US';
 
       const extraLocaleTxt = geoData.isMobile === true ? '; on mobile' : '';
-      ret = `${ret} (from: ${geoData.city}, ${regionStr}${extraLocaleTxt})`;
+      ret = `${ret} (from: ${geoData.city}, ${
+        isUS ? regionStr : countryStr
+      }${extraLocaleTxt})`;
     }
     if (clientIpGeo.emailProvider != null) {
       ret = `${ret} (using: ${clientIpGeo.emailProvider})`;
