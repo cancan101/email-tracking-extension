@@ -1,22 +1,31 @@
 import React from 'react';
-import FormatView from '../FormatView';
-import { View } from '../../types';
 import List from '@mui/material/List';
 import ListItem from '@mui/material/ListItem';
 import ListItemText from '@mui/material/ListItemText';
+import Tooltip from '@mui/material/Tooltip';
+import dayjs from 'dayjs';
+
+import FormatView from '../FormatView';
+import { View } from '../../types';
 
 function ThreadViewListItem({ view, pos }: { view: View; pos: number }) {
+  const extraDetails = `Email sent: ${dayjs(
+    view.tracker.scheduledSendAt ?? view.tracker.createdAt
+  ).format('L LT')}`;
+
   return (
     <ListItem disablePadding>
-      <ListItemText
-        primary={
-          <>
-            {pos + 1}
-            {'. '}
-            <FormatView view={view} />
-          </>
-        }
-      ></ListItemText>
+      <Tooltip title={extraDetails} placement="bottom-start" arrow>
+        <ListItemText
+          primary={
+            <>
+              {pos + 1}
+              {'. '}
+              <FormatView view={view} />
+            </>
+          }
+        ></ListItemText>
+      </Tooltip>
     </ListItem>
   );
 }

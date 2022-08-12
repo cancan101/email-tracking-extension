@@ -16,7 +16,12 @@ type ClientIpGeo = {
   emailProvider?: string;
 };
 
-type Tracker = { threadId: string; emailSubject: string };
+type Tracker = {
+  threadId: string;
+  emailSubject: string;
+  createdAt: string;
+  scheduledSendAt?: string;
+};
 
 export type View = {
   id: string;
