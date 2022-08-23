@@ -32,6 +32,15 @@ function processLogin(
       },
     })
     .then(() => {
+      console.log(
+        'post processLogin for:',
+        emailAccount,
+        'expiresAt:',
+        expiresAt,
+        'slug:',
+        trackingSlug
+      );
+
       chrome.runtime.sendMessage({ your: 'LOGIN_IN', emailAccount });
 
       // We do a redirect here to a notification page but we also attempt to automatically close the tab from the background
