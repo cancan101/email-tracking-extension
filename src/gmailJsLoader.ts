@@ -516,6 +516,9 @@ gmail.observe.on('compose', function (compose, _) {
   setTimeout(() => {
     const scheduledSend = compose.find('.J-N.yr').first()[0];
 
+    // expand the prior copy:
+    compose.find('.ajR').click();
+
     gmail.tools.add_more_send_option(
       compose,
       'Scheduled Track',
