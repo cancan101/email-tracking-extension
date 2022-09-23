@@ -407,9 +407,13 @@ gmail.observe.on('load', () => {
     const emailId = data.id;
     console.log('Email ID:', emailId);
 
+    const bodyData = JSON.parse(body);
     // const threadId = response[2]?.[6]?.[0]?.[1]?.[1];
-    const threadId = JSON.parse(body)[2]?.[1]?.[0]?.[2]?.[1];
-    // console.log('Thread ID:', threadId);
+    // const threadId = bodyData[2]?.[1]?.[0]?.[2]?.[1];
+    const threadId = bodyData[1]?.[0]?.[0]?.[1]?.[0];
+    console.log('Thread ID:', threadId);
+    // console.log('data:', data);
+    // console.log('body:', JSON.parse(body));
 
     const emailSubject = data.subject;
     console.log('emailSubject:', emailSubject);
