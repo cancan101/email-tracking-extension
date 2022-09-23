@@ -617,6 +617,7 @@ function requestStorage() {
   if (emailAccount === null) {
     return;
   }
+  // we might want to await this
   chrome.runtime.sendMessage(
     extensionId,
     { your: 'STORAGE', emailAccount },

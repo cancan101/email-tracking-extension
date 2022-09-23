@@ -17,7 +17,7 @@ const Popup = () => {
           onClick={async () => {
             setLoggingOut(true);
             // TODO: we should also probably notify server to clear the right cookie
-            chrome.runtime.sendMessage({ your: 'LOG_OUT' });
+            await chrome.runtime.sendMessage({ your: 'LOG_OUT' });
             try {
               await chrome.storage.sync.clear();
             } catch {

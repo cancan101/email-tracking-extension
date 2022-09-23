@@ -31,7 +31,7 @@ function processLogin(
         trackingSlug,
       },
     })
-    .then(() => {
+    .then(async () => {
       console.log(
         'post processLogin for:',
         emailAccount,
@@ -41,7 +41,11 @@ function processLogin(
         trackingSlug
       );
 
-      chrome.runtime.sendMessage({ your: 'LOGIN_IN', emailAccount });
+      const sendMessageResp = await chrome.runtime.sendMessage({
+        your: 'LOGIN_IN',
+        emailAccount,
+      });
+      console.log('sendMessageResp', sendMessageResp);
 
       // We do a redirect here to a notification page but we also attempt to automatically close the tab from the background
       const loggedInUrl = new URL(window.location.toString());
