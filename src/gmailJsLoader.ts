@@ -372,11 +372,13 @@ function setupLogin() {
   }
 }
 
+let isLoaded = false;
 gmail.observe.on('load', () => {
   const userEmail = gmail.get.user_email();
   useStore.setState({ userEmail });
 
   console.log('gmail-js loaded!', userEmail);
+  isLoaded = true;
   requestStorage();
 
   setInterval(function () {
@@ -512,12 +514,17 @@ gmail.observe.on('load', () => {
 
 gmail.observe.on('compose', function (compose, _) {
   console.log('compose', compose, compose.id());
-  if (!useStore.getState().isLoggedIn()) {
-    return;
-  }
 
   // TODO(cancan101): figure out if the window is re-opened due to a failed send
+
+  // if we are opening a new window then then isLoaded may be false and we should wait
+  const delayLoading = isLoaded ? 0 : 500;
   setTimeout(() => {
+    if (!useStore.getState().isLoggedIn()) {
+      console.log('skipping compose injection as not logged in');
+      return;
+    }
+
     const scheduledSend = compose.find('.J-N.yr').first()[0];
 
     gmail.tools.add_more_send_option(
@@ -561,57 +568,57 @@ gmail.observe.on('compose', function (compose, _) {
         'bq5 move_to_inbox_googblue'
       );
     }
-  }, 0);
 
-  let wasInjected = false;
-  function injectTracking() {
-    if (wasInjected) {
-      console.log('We already injected in this compose');
-      return;
+    let wasInjected = false;
+    function injectTracking() {
+      if (wasInjected) {
+        console.log('We already injected in this compose');
+        return;
+      }
+
+      const email_id = compose.email_id();
+      if (messageToTracker.has(email_id)) {
+        console.log('We already injected in this message');
+        return;
+      }
+
+      const trackingSlug = useStore.getState().userInfo?.trackingSlug;
+      if (trackingSlug === undefined) {
+        throw new Error('No trackingSlug');
+      }
+
+      const trackId = uuidv4();
+      console.log(`Using id: ${trackId}`);
+
+      messageToTracker.set(email_id, trackId);
+
+      // TODO use lib here:
+      const url = `${imageBaseUrl}/${trackingSlug}/${trackId}/image.gif`;
+
+      const trackingPixelHtml = getTrackerHTML(url);
+
+      const mail_body = compose.body();
+
+      // TODO(cancan101): remove old trackers
+      compose.body(mail_body + trackingPixelHtml);
+
+      ids.push(trackId);
+      wasInjected = true;
     }
 
-    const email_id = compose.email_id();
-    if (messageToTracker.has(email_id)) {
-      console.log('We already injected in this message');
-      return;
-    }
+    gmail.tools.add_compose_button(
+      compose,
+      'Track',
+      () => {
+        console.log('Track requested!');
 
-    const trackingSlug = useStore.getState().userInfo?.trackingSlug;
-    if (trackingSlug === undefined) {
-      throw new Error('No trackingSlug');
-    }
+        injectTracking();
 
-    const trackId = uuidv4();
-    console.log(`Using id: ${trackId}`);
-
-    messageToTracker.set(email_id, trackId);
-
-    // TODO use lib here:
-    const url = `${imageBaseUrl}/${trackingSlug}/${trackId}/image.gif`;
-
-    const trackingPixelHtml = getTrackerHTML(url);
-
-    const mail_body = compose.body();
-
-    // TODO(cancan101): remove old trackers
-    compose.body(mail_body + trackingPixelHtml);
-
-    ids.push(trackId);
-    wasInjected = true;
-  }
-
-  gmail.tools.add_compose_button(
-    compose,
-    'Track',
-    () => {
-      console.log('Track requested!');
-
-      injectTracking();
-
-      compose.send();
-    },
-    'tracker-mail-tracked'
-  );
+        compose.send();
+      },
+      'tracker-mail-tracked'
+    );
+  }, delayLoading);
 });
 
 let clearUserInfoHandle: number | null = null;
