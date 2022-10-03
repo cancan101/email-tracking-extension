@@ -289,6 +289,8 @@ async function getUserViews(): Promise<View[] | null> {
   try {
     resp = await fetchAuth(url);
   } catch (error) {
+    // TODO(cancan101): we could try to verify the type of error here
+    // and then selectively log / report to Sentry/
     return null;
   }
   if (resp.ok) {
