@@ -7,7 +7,8 @@ import { sentrySettings, sentryEnabled } from './settings';
 
 if (sentryEnabled) {
   Sentry.init({
-    ...sentrySettings,
+    ignoreErrors: ['pinto.mainpage.FastTearoffBodyController'],
     integrations: [new BrowserTracing()],
+    ...sentrySettings,
   });
 }
