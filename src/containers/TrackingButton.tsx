@@ -52,6 +52,8 @@ export default function TrackingButton({
   let message = 'Tracking';
   if (views != null && views.length > 0) {
     message = `${message} (${dayjs().to(dayjs(views[0].createdAt), false)})`;
+  } else if (views === null) {
+    message = `${message} (err)`;
   }
 
   return (

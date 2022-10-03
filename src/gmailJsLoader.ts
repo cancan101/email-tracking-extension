@@ -284,9 +284,13 @@ async function getUserViews(): Promise<View[] | null> {
   if (userId === undefined) {
     throw new Error('No userId');
   }
-  const resp = await fetchAuth(
-    `${dashboardUrl}?userId=${userId}&limit=${INBOX_VIEW_LIST_MAX_SHOWN}`
-  );
+  const url = `${dashboardUrl}?userId=${userId}&limit=${INBOX_VIEW_LIST_MAX_SHOWN}`;
+  let resp;
+  try {
+    resp = await fetchAuth(url);
+  } catch (error) {
+    return null;
+  }
   if (resp.ok) {
     const respData = await resp.json();
     if (respData.data !== null) {
