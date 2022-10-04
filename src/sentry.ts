@@ -7,7 +7,11 @@ import { sentrySettings, sentryEnabled } from './settings';
 
 if (sentryEnabled) {
   Sentry.init({
-    ignoreErrors: ['pinto.mainpage.FastTearoffBodyController'],
+    ignoreErrors: [
+      'pinto.mainpage.FastTearoffBodyController',
+      "Cannot read properties of null (reading 'gbar')",
+      'AppContext is disposed, cannot get',
+    ],
     integrations: [new BrowserTracing()],
     ...sentrySettings,
   });
