@@ -19,9 +19,14 @@ jobs:
           cache: 'npm'
       - run: mkdir node_modules && npm ci --no-fund --no-audit
       - run: npm test
-      - run: |
+      - name: Build Release
+        run: |
           npm run build
           ls ./build
+        env:
+          EMAIL_TRACKING_BACKEND_URL: ${{ secrets.EMAIL_TRACKING_BACKEND_URL }}
+          EMAIL_TRACKING_BACKEND_URL_OLD: ${{ secrets.EMAIL_TRACKING_BACKEND_URL_OLD }}
+          SENTRY_DSN: ${{ secrets.SENTRY_DSN }}
       - name: Create Sentry release
         uses: getsentry/action-release@v1
         if: github.ref == 'refs/heads/master'
