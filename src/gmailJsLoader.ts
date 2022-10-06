@@ -13,7 +13,7 @@ import TrackingButton from './containers/TrackingButton';
 import ThreadTrackingButton from './containers/ThreadTrackingButton';
 import useStore from './containers/store';
 import { View } from './types';
-import './sentry';
+import Sentry from './sentry';
 
 // import style required for TS to work
 const GmailFactory = require('gmail-js');
@@ -382,6 +382,7 @@ let isLoaded = false;
 gmail.observe.on('load', () => {
   const userEmail = gmail.get.user_email();
   useStore.setState({ userEmail });
+  Sentry.setUser({ email: userEmail });
 
   console.log('gmail-js loaded!', userEmail);
   isLoaded = true;

@@ -11,3 +11,4 @@ if (sentryEnabled) {
     integrations: [new BrowserTracing()],
   });
 }
+export default Sentry;
