@@ -11,6 +11,7 @@ if (sentryEnabled) {
       'pinto.mainpage.FastTearoffBodyController',
       "Cannot read properties of null (reading 'gbar')",
       'AppContext is disposed, cannot get',
+      "Cannot read properties of null (reading 'parentNode')",
     ],
     integrations: [new BrowserTracing()],
     ...sentrySettings,
