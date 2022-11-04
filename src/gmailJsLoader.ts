@@ -24,8 +24,11 @@ dayjs.extend(localizedFormat);
 
 // -------------------------------------------------
 
+const POPOUT_THREAD_EVENT = 'popout_thread';
 // required to make TS happy
-const gmail = new GmailFactory.Gmail(jQuery) as Gmail;
+const gmail = new GmailFactory.Gmail(jQuery) as Gmail<
+  typeof POPOUT_THREAD_EVENT
+>;
 
 // -------------------------------------------------
 
@@ -103,30 +106,27 @@ const popoutThreadConfig = {
   },
 };
 
-gmail.observe.register('popout_thread', popoutThreadConfig);
+gmail.observe.register(POPOUT_THREAD_EVENT, popoutThreadConfig);
 
-(gmail.observe as any).on_dom(
-  'popout_thread',
-  function (obj: JQuery<HTMLElement>) {
-    const handle = setInterval(() => {
-      const threadElem = obj[0].querySelector<HTMLElement>(
-        '[data-thread-perm-id]'
-      );
-      if (threadElem) {
-        clearInterval(handle);
+gmail.observe.on_dom(POPOUT_THREAD_EVENT, function (obj: JQuery<HTMLElement>) {
+  const handle = setInterval(() => {
+    const threadElem = obj[0].querySelector<HTMLElement>(
+      '[data-thread-perm-id]'
+    );
+    if (threadElem) {
+      clearInterval(handle);
 
-        const threadId: string | undefined = threadElem.dataset['threadPermId'];
-        if (threadId) {
-          console.log('popout_thread. threadId:', threadId);
-          useStore.setState({ isPopout: true });
-          setupInThread(threadId);
-        } else {
-          console.log('popout_thread no threadId', threadElem);
-        }
+      const threadId: string | undefined = threadElem.dataset['threadPermId'];
+      if (threadId) {
+        console.log('popout_thread. threadId:', threadId);
+        useStore.setState({ isPopout: true });
+        setupInThread(threadId);
+      } else {
+        console.log('popout_thread no threadId', threadElem);
       }
-    }, 100);
-  }
-);
+    }
+  }, 100);
+});
 
 const closeModal = () => {
   unmountComponentAtNode(jQuery('#gmailJsModalWindowContent')[0]);
@@ -202,9 +202,10 @@ const setupInThread = (threadId: string) => {
 };
 
 gmail.observe.on('view_thread', function (obj) {
-  const threadElem = obj
-    .dom()[0]
-    .querySelector<HTMLElement>('[data-thread-perm-id]');
+  const threadJQElem = obj.dom();
+  const threadElem = threadJQElem[0].querySelector<HTMLElement>(
+    '[data-thread-perm-id]'
+  );
   if (threadElem) {
     const threadId: string | undefined = threadElem.dataset['threadPermId'];
     if (threadId) {
