@@ -25,7 +25,7 @@
     "@hot-loader/react-dom": "^17.0.2",
     "@mui/material": "^5.10.14",
     "@sentry/cli": "^2.9.0",
-    "@sentry/react": "^7.17.4",
+    "@sentry/react": "^7.23.0",
     "@sentry/tracing": "^7.17.4",
     "dayjs": "^1.11.6",
     "gmail-js": "github:KartikTalwar/gmail.js#5e26fead65aebce4e099555a242de40a02bf7cf1",
