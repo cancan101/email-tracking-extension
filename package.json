@@ -29,7 +29,7 @@
     "@sentry/tracing": "^7.17.4",
     "dayjs": "^1.11.6",
     "gmail-js": "github:KartikTalwar/gmail.js#5e26fead65aebce4e099555a242de40a02bf7cf1",
-    "jose": "^4.10.0",
+    "jose": "^4.11.2",
     "jquery": "^3.6.1",
     "react": "^17.0.2",
     "react-dom": "^17.0.2",
