@@ -12,6 +12,8 @@ if (sentryEnabled) {
       "Cannot read properties of null (reading 'gbar')",
       'AppContext is disposed, cannot get',
       "Cannot read properties of null (reading 'parentNode')",
+      'Error in protected function',
+      'is not registered',
     ],
     integrations: [new BrowserTracing()],
     ...sentrySettings,
