@@ -26,7 +26,7 @@
     "@mui/material": "^5.10.14",
     "@sentry/react": "^7.57.0",
     "@sentry/tracing": "^7.57.0",
-    "dayjs": "^1.11.6",
+    "dayjs": "^1.11.9",
     "gmail-js": "^1.1.10",
     "jose": "^4.11.2",
     "jquery": "^3.7.0",
