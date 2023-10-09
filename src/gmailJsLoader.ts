@@ -195,10 +195,16 @@ const setupInThread = (threadId: string) => {
     });
   });
   const bar = jQuery('[gh="tm"]');
-  observer.observe(bar.parent()[0], {
-    subtree: true,
-    childList: true,
-  });
+  const barParent = bar.parent()[0];
+  if (barParent == null) {
+    // If we can't monitor it, just remove it
+    unmountComponentAtNode(btnTrackingThreadBtnContainer);
+  } else {
+    observer.observe(barParent, {
+      subtree: true,
+      childList: true,
+    });
+  }
 };
 
 gmail.observe.on('view_thread', function (obj) {
