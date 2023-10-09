@@ -15,38 +15,36 @@ if (sentryEnabled) {
 console.log('This is the background page.');
 console.log('Put the background scripts here.');
 
-chrome.runtime.onMessageExternal.addListener(function (
-  message,
-  sender,
-  send_response
-) {
-  // TODO: check the sender here
-  console.log('background::onMessageExternal', sender, message);
-  const runner = async () => {
-    if (message.your === 'STORAGE') {
-      const { emailAccount } = message;
-      console.log('receive storage', emailAccount);
-      let storageData;
-      try {
-        storageData = await chrome.storage.sync.get();
-      } catch {
-        //ignore
-        return;
-      }
-      const accountEntry = storageData[emailAccount];
-      if (accountEntry) {
-        return accountEntry;
-      } else {
-        return;
-      }
-    } /*else if (message.your === 'TEST') {
+chrome.runtime.onMessageExternal.addListener(
+  function (message, sender, send_response) {
+    // TODO: check the sender here
+    console.log('background::onMessageExternal', sender, message);
+    const runner = async () => {
+      if (message.your === 'STORAGE') {
+        const { emailAccount } = message;
+        console.log('receive storage', emailAccount);
+        let storageData;
+        try {
+          storageData = await chrome.storage.sync.get();
+        } catch {
+          //ignore
+          return;
+        }
+        const accountEntry = storageData[emailAccount];
+        if (accountEntry) {
+          return accountEntry;
+        } else {
+          return;
+        }
+      } /*else if (message.your === 'TEST') {
       setTimeout(() => send_response({ foo: 'bar' }), 10);
     }*/
-    return;
-  };
-  runner().then((response) => send_response(response));
-  return true;
-});
+      return;
+    };
+    runner().then((response) => send_response(response));
+    return true;
+  }
+);
 
 chrome.runtime.onMessage.addListener(function (request, sender, sendResponse) {
   // TODO: check the sender here
