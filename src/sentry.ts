@@ -1,5 +1,4 @@
 import * as Sentry from '@sentry/react';
-import { BrowserTracing } from '@sentry/browser';
 
 import { sentrySettings, sentryEnabled } from './settings';
 
@@ -15,7 +14,7 @@ if (sentryEnabled) {
       'Error in protected function',
       'is not registered',
     ],
-    integrations: [new BrowserTracing()],
+    integrations: [new Sentry.BrowserTracing()],
     ...sentrySettings,
   });
 }
