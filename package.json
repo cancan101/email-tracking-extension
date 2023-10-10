@@ -27,7 +27,7 @@
     "@sentry/react": "^7.64.0",
     "@sentry/tracing": "^7.64.0",
     "dayjs": "^1.11.9",
-    "gmail-js": "^1.1.10",
+    "gmail-js": "^1.1.11",
     "jose": "^4.11.2",
     "jquery": "^3.7.1",
     "react": "^17.0.2",
