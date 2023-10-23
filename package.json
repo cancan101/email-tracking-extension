@@ -41,7 +41,7 @@
     "@babel/eslint-parser": "^7.22.10",
     "@babel/plugin-proposal-class-properties": "^7.16.7",
     "@babel/preset-env": "^7.22.20",
-    "@babel/preset-react": "^7.22.5",
+    "@babel/preset-react": "^7.22.15",
     "@sentry/cli": "^2.21.2",
     "@types/chrome": "^0.0.248",
     "@types/jquery": "^3.5.18",
