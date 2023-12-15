@@ -40,7 +40,7 @@ jobs:
           sourcemaps: ./build
           url_prefix: chrome-extension://${{ secrets.CHROME_EXTENSION_ID }}
       - name: Upload Artifact
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: build
           path: ./build/*
