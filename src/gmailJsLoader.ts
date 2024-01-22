@@ -46,6 +46,9 @@ const btnTrackingClass = 'btn-tracking';
 const btnLoginClass = 'btn-login';
 const btnTrackingThreadClass = 'btn-trackingThread';
 const btnManageMarginClass = 'btn-manageMargin';
+// TODO(cancan101): resolve this programatically, etc
+const btnColorClass = 'Dj';
+const btnClasses = `${btnManageMarginClass} ${btnColorClass}`;
 
 // -------------------------------------------------
 
@@ -165,7 +168,7 @@ const setupInThread = (threadId: string) => {
   const btnTrackingThread = gmail.tools.add_toolbar_button(
     null as any as string,
     null as any as Function,
-    `${btnTrackingThreadClass} ${btnManageMarginClass}`
+    `${btnTrackingThreadClass} ${btnClasses}`
   );
   btnTrackingThread.children().off('click');
   const btnTrackingThreadBtnContainer = document.createElement('div');
@@ -318,7 +321,7 @@ function setupTracking() {
     const container = gmail.tools.add_toolbar_button(
       null as any as string,
       null as any as Function,
-      `${btnTrackingClass} ${btnManageMarginClass}`
+      `${btnTrackingClass} ${btnClasses}`
     );
     container.children().off('click');
     jQuery(container.children()[0]).append(jQuery(trackingBtnContainer));
@@ -363,7 +366,7 @@ function setupLogin() {
     const container = gmail.tools.add_toolbar_button(
       null as any as string,
       null as any as Function,
-      `${btnLoginClass} ${btnManageMarginClass}`
+      `${btnLoginClass} ${btnClasses}`
     );
     container.children().off('click');
     jQuery(container.children()[0]).append(jQuery(loginBtnContainer));
