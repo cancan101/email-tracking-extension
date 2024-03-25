@@ -5,6 +5,7 @@ import dayjs from 'dayjs';
 import localizedFormat from 'dayjs/plugin/localizedFormat';
 import React from 'react';
 import { render, unmountComponentAtNode } from 'react-dom';
+import DOMPurify from 'dompurify';
 
 import InboxViewList from './containers/InboxViewList';
 import ThreadViewList from './containers/ThreadViewList';
@@ -21,6 +22,13 @@ const GmailFactory = require('gmail-js');
 // -------------------------------------------------
 
 dayjs.extend(localizedFormat);
+
+// -------------------------------------------------
+
+const trustedHTMLpolicy = (window as any).trustedTypes.createPolicy('default', {
+  createHTML: (to_escape: string) =>
+    DOMPurify.sanitize(to_escape, { RETURN_TRUSTED_TYPE: true }),
+});
 
 // -------------------------------------------------
 
