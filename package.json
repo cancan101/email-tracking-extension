@@ -84,6 +84,10 @@
     "webpack-dev-server": "^4.15.1",
     "zip-webpack-plugin": "^4.0.1"
   },
+  "overrides": {
+    "@typescript-eslint/eslint-plugin": "6.x",
+    "@typescript-eslint/parser": "6.x"
+  },
   "engines": {
     "node": "18.x"
   },
