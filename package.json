@@ -44,7 +44,7 @@
     "@babel/preset-env": "^7.26.9",
     "@babel/preset-react": "^7.23.3",
     "@sentry/cli": "^2.30.2",
-    "@types/chrome": "^0.0.309",
+    "@types/chrome": "^0.0.322",
     "@types/dompurify": "^3.0.5",
     "@types/jquery": "^3.5.18",
     "@types/react": "^17.0.39",
