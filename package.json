@@ -28,7 +28,7 @@
     "@sentry/tracing": "^7.120.4",
     "dayjs": "^1.11.10",
     "dompurify": "^3.2.4",
-    "gmail-js": "^1.1.14",
+    "gmail-js": "^1.1.16",
     "jose": "^6.1.3",
     "jquery": "^4.0.0-beta",
     "react": "^17.0.2",
