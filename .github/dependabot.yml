@@ -12,7 +12,8 @@ updates:
     groups:
       sentry:
         patterns:
-          - '@sentry/*'
+          - '@sentry/tracing'
+          - '@sentry/react'
   - package-ecosystem: 'github-actions'
     directory: /
     schedule:
