@@ -1,6 +1,6 @@
 {
   "name": "email-tracking-extension",
-  "version": "0.0.13",
+  "version": "0.0.14",
   "description": "A chrome extension to orchestrate email open track from Gmail.",
   "private": true,
   "license": "MIT",
