@@ -14,20 +14,11 @@ function addScript(src: string): void {
 
 addScript('gmailJsLoader.bundle.js');
 
-// window.addEventListener(
-//   'get-settings-data',
-//   function (event) {
-//     console.log('get-settings-data');
-//     window.dispatchEvent(
-//       new CustomEvent('settings-retrieved', { detail: 'settingsData' })
-//     );
-//   },
-//   false
-// );
-
+// chrome.runtime.onMessage only fires for messages from this extension's own
+// contexts (background/popup/options), so sender.id === chrome.runtime.id is
+// guaranteed by Chrome. External pages cannot reach this listener.
 chrome.runtime.onMessage.addListener(function (request, sender, sendResponse) {
   console.log('contentScript::onMessage', request, sender);
-  // TODO: check the sender here
   const eventType = request.your;
   if (eventType === 'LOGIN_IN') {
     window.dispatchEvent(new CustomEvent('login-notice', { detail: request }));
