@@ -119,24 +119,36 @@ const popoutThreadConfig = {
 
 gmail.observe.register(POPOUT_THREAD_EVENT, popoutThreadConfig);
 
+// Poll for the thread element with a hard cap so we don't keep checking
+// indefinitely if the DOM never produces it (e.g., Gmail's UI changed, or
+// the popout was closed before our interval found the element).
+const POPOUT_POLL_INTERVAL_MS = 100;
+const POPOUT_POLL_MAX_ATTEMPTS = 100; // 10s total
 gmail.observe.on_dom(POPOUT_THREAD_EVENT, function (obj: JQuery<HTMLElement>) {
+  let attempts = 0;
   const handle = setInterval(() => {
+    attempts += 1;
     const threadElem = obj[0].querySelector<HTMLElement>(
       '[data-thread-perm-id]'
     );
     if (threadElem) {
       clearInterval(handle);
-
       const threadId: string | undefined = threadElem.dataset['threadPermId'];
       if (threadId) {
-        console.log('popout_thread. threadId:', threadId);
         useStore.setState({ isPopout: true });
         setupInThread(threadId);
       } else {
         console.log('popout_thread no threadId', threadElem);
       }
+    } else if (attempts >= POPOUT_POLL_MAX_ATTEMPTS) {
+      clearInterval(handle);
+      console.warn(
+        'popout_thread gave up after',
+        POPOUT_POLL_MAX_ATTEMPTS,
+        'attempts'
+      );
     }
-  }, 100);
+  }, POPOUT_POLL_INTERVAL_MS);
 });
 
 const closeModal = () => {
