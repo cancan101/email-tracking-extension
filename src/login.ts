@@ -1,4 +1,5 @@
 import './sentry';
+import { fetchWithTimeout } from './utils/fetchWithTimeout';
 
 // -------------------------------------------------
 
@@ -68,7 +69,7 @@ async function processQsLogin() {
     console.log('Missing token');
     return;
   }
-  const resp = await fetch(useMagicUrl, {
+  const resp = await fetchWithTimeout(useMagicUrl, {
     headers: {
       'Content-Type': 'application/json',
     },

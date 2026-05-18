@@ -15,6 +15,7 @@ import ThreadTrackingButton from './containers/ThreadTrackingButton';
 import useStore from './containers/store';
 import { View } from './types';
 import Sentry from './sentry';
+import { fetchWithTimeout } from './utils/fetchWithTimeout';
 
 // import style required for TS to work
 const GmailFactory = require('gmail-js');
@@ -99,7 +100,7 @@ async function fetchAuth(
     throw new Error('Not logged in');
   }
 
-  return await fetch(input, {
+  return await fetchWithTimeout(input, {
     ...(init ?? {}),
     headers: { ...(init?.headers ?? {}), Authorization: authorization },
   });
@@ -382,7 +383,7 @@ function setupTracking() {
 const requestLogin = async () => {
   const emailAccount = useStore.getState().userEmail;
 
-  await fetch(loginUrl, {
+  await fetchWithTimeout(loginUrl, {
     headers: {
       'Content-Type': 'application/json',
     },
