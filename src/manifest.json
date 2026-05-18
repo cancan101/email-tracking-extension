@@ -30,12 +30,8 @@
       "matches": []
     },
     {
-      "resources": ["gmailJsLoader.bundle.js", "gmailJsLoader.bundle.js.map"],
+      "resources": ["gmailJsLoader.bundle.js"],
       "matches": ["https://mail.google.com/*"]
-    },
-    {
-      "resources": ["login.bundle.js.map"],
-      "matches": ["__EMAIL_TRACKING_BACKEND_URL__/*"]
     }
   ],
   "host_permissions": ["https://mail.google.com/*"],
