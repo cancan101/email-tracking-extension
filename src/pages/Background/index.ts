@@ -118,11 +118,11 @@ function notifyLogin(emailAccount: string): void {
   });
 }
 
-function notifyLogout(emailAccount?: string): void {
+function notifyLogout(): void {
   chrome.tabs.query({ url: 'https://mail.google.com/*' }, function (tabs) {
     tabs.forEach(function (tab) {
       if (tab.id !== undefined) {
-        chrome.tabs.sendMessage(tab.id, { your: 'LOG_OUT', emailAccount });
+        chrome.tabs.sendMessage(tab.id, { your: 'LOG_OUT' });
       }
     });
   });

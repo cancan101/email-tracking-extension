@@ -26,7 +26,11 @@ dayjs.extend(localizedFormat);
 
 // -------------------------------------------------
 
-const trustedHTMLpolicy = (window as any).trustedTypes.createPolicy('default', {
+// Install a default Trusted Types policy so jQuery / gmail-js can keep using
+// innerHTML-style sinks on pages that enforce Trusted Types. DOMPurify is the
+// sanitizer of record. The policy registers itself on creation; we don't need
+// to keep the returned handle.
+(window as any).trustedTypes.createPolicy('default', {
   createHTML: (to_escape: string) =>
     DOMPurify.sanitize(to_escape, { RETURN_TRUSTED_TYPE: true }),
 });
@@ -61,6 +65,17 @@ const btnClasses = `${btnManageMarginClass} ${btnColorClass}`;
 
 // -------------------------------------------------
 
+// gmail-js's add_toolbar_button signature is (label, onclick, cssClass); we
+// only want the cssClass slot and attach our own React tree afterwards, so
+// pass placeholders. This helper hides the three-line `null as any` cast
+// repeated at every call site.
+const addEmptyToolbarButton = (cssClass: string): JQuery<HTMLElement> =>
+  gmail.tools.add_toolbar_button(
+    null as any as string,
+    null as any as Function,
+    cssClass
+  );
+
 const INBOX_VIEW_LIST_MAX_SHOWN = 20;
 
 // -------------------------------------------------
@@ -71,16 +86,8 @@ console.log(
 
 // -------------------------------------------------
 
-function getTrackerHTMLImg(url: string): string {
-  return `<img src="${url}" data-src="${url}" loading="lazy" height="1" width="1" style="border:0; width:1; height:1; overflow:hidden; display:none !important;" class="tracker-img">`;
-}
-
-function getTrackerHTMLBackground(url: string): string {
-  return `<div height="1" width="1" style="background-image: url('${url}');" data-src="${url}" class="tracker-img"></div>`;
-}
-
 function getTrackerHTML(url: string): string {
-  return getTrackerHTMLBackground(url);
+  return `<div height="1" width="1" style="background-image: url('${url}');" data-src="${url}" class="tracker-img"></div>`;
 }
 
 function getAuthorization(): string | null {
@@ -188,9 +195,7 @@ const getThreadViews = async (threadId: string): Promise<View[] | null> => {
 };
 
 const setupInThread = (threadId: string) => {
-  const btnTrackingThread = gmail.tools.add_toolbar_button(
-    null as any as string,
-    null as any as Function,
+  const btnTrackingThread = addEmptyToolbarButton(
     `${btnTrackingThreadClass} ${btnClasses}`
   );
   btnTrackingThread.children().off('click');
@@ -295,7 +300,6 @@ window.addEventListener(
   },
   false
 );
-// window.dispatchEvent(new CustomEvent('get-settings-data'));
 
 function renderTrackingInfo(views: View[]) {
   gmail.tools.add_modal_window(
@@ -352,9 +356,7 @@ const trackingBtnContainer = document.createElement('div');
 function setupTracking() {
   const buttons = jQuery(`[gh="mtb"] .${btnTrackingClass}`);
   if (buttons.length === 0) {
-    const container = gmail.tools.add_toolbar_button(
-      null as any as string,
-      null as any as Function,
+    const container = addEmptyToolbarButton(
       `${btnTrackingClass} ${btnClasses}`
     );
     container.children().off('click');
@@ -397,11 +399,7 @@ const loginBtnContainer = document.createElement('div');
 function setupLogin() {
   const buttons = jQuery(`[gh="mtb"] .${btnLoginClass}`);
   if (buttons.length === 0) {
-    const container = gmail.tools.add_toolbar_button(
-      null as any as string,
-      null as any as Function,
-      `${btnLoginClass} ${btnClasses}`
-    );
+    const container = addEmptyToolbarButton(`${btnLoginClass} ${btnClasses}`);
     container.children().off('click');
     jQuery(container.children()[0]).append(jQuery(loginBtnContainer));
 
@@ -461,12 +459,11 @@ gmail.observe.on('load', () => {
     console.log('Email ID:', emailId);
 
     const bodyData = JSON.parse(body);
-    // const threadId = response[2]?.[6]?.[0]?.[1]?.[1];
-    // const threadId = bodyData[2]?.[1]?.[0]?.[2]?.[1];
+    // Historical paths kept in case gmail-js's send body shape changes again:
+    //   bodyData[2]?.[1]?.[0]?.[2]?.[1]
+    //   response[2]?.[6]?.[0]?.[1]?.[1]
     const threadId = bodyData[1]?.[0]?.[0]?.[1]?.[0];
     console.log('Thread ID:', threadId);
-    // console.log('data:', data);
-    // console.log('body:', JSON.parse(body));
 
     const emailSubject = data.subject;
     console.log('emailSubject:', emailSubject);
@@ -478,12 +475,6 @@ gmail.observe.on('load', () => {
     const urls = Array.from(trackers)
       .map((el) => (el instanceof HTMLElement ? el.dataset.src : null))
       .filter((src) => !!src && src.startsWith(imageBaseUrl)) as string[];
-
-    // console.log(
-    //   Array.from(trackers).map((el) =>
-    //     el instanceof HTMLImageElement ? el.dataset.src : null
-    //   )
-    // );
 
     // 38 is length of uuid
     const trackIds = urls.map((src) =>
@@ -730,18 +721,3 @@ const processLogout = () => {
   );
   useStore.setState({ userInfo: null });
 };
-
-/*
-async function sendTestMessage(): Promise<string> {
-  return new Promise<string>((resolve, reject) => {
-    const { userEmail } = useStore.getState();
-    chrome.runtime.sendMessage(
-      extensionId,
-      { your: 'TEST', emailAccount: userEmail },
-      function (response: any): void {
-        resolve(response.foo);
-      }
-    );
-  });
-}
-*/
