@@ -476,10 +476,20 @@ gmail.observe.on('load', () => {
       .map((el) => (el instanceof HTMLElement ? el.dataset.src : null))
       .filter((src) => !!src && src.startsWith(imageBaseUrl)) as string[];
 
-    // 38 is length of uuid
-    const trackIds = urls.map((src) =>
-      src.slice(imageBaseUrl.length + 38, -'image.gif'.length - 1)
-    );
+    // URL shape (see injectTracking below): `{imageBaseUrl}/{slug}/{trackId}/image.gif`
+    // Parse via URL/pathname so any backend prefix or path tweak doesn't break us.
+    const trackIds = urls
+      .map((src) => {
+        try {
+          const segments = new URL(src).pathname.split('/');
+          // expecting [..., slug, trackId, 'image.gif']
+          if (segments[segments.length - 1] !== 'image.gif') return null;
+          return segments[segments.length - 2] || null;
+        } catch {
+          return null;
+        }
+      })
+      .filter((id): id is string => id !== null);
 
     if (trackIds.length > 0) {
       console.log('trackers:', trackIds, ids);
