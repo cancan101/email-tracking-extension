@@ -458,6 +458,14 @@ gmail.observe.on('load', () => {
     const emailId = data.id;
     console.log('Email ID:', emailId);
 
+    // Once the message has been sent, we no longer need the compose-id →
+    // trackId mapping; drop it so the map doesn't grow for the lifetime of
+    // the tab. (gmail-js reports `data.id` as the same email id we used as
+    // the map key on injection.)
+    if (typeof emailId === 'string' && messageToTracker.has(emailId)) {
+      messageToTracker.delete(emailId);
+    }
+
     const bodyData = JSON.parse(body);
     // Historical paths kept in case gmail-js's send body shape changes again:
     //   bodyData[2]?.[1]?.[0]?.[2]?.[1]
