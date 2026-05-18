@@ -241,8 +241,15 @@ var options = {
 if (env.NODE_ENV === 'development') {
   options.devtool = 'cheap-module-source-map';
 } else {
+  // `hidden-source-map` still emits the .map files (so the Sentry CLI can
+  // upload them and unminify stack traces) but omits the sourceMappingURL
+  // comment from the bundle. Combined with the prod-only filter further up
+  // in this file that strips `*.js.map` from web_accessible_resources, the
+  // browser cannot fetch the maps from mail.google.com page-level scripts.
+  // Dev keeps `cheap-module-source-map` + maps in web_accessible_resources
+  // so devtools resolve source normally when debugging in-page scripts.
   // https://docs.sentry.io/platforms/javascript/sourcemaps/generating/#webpack
-  options.devtool = 'source-map';
+  options.devtool = 'hidden-source-map';
   options.optimization = {
     minimize: true,
     minimizer: [
