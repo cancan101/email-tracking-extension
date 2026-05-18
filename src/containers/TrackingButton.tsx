@@ -50,14 +50,20 @@ export default function TrackingButton({
       : { marginLeft: '12px', marginRight: '12px' };
 
   let message = 'Tracking';
+  let title: string | undefined;
   if (views != null && views.length > 0) {
     message = `${message} (${dayjs().to(dayjs(views[0].createdAt), false)})`;
   } else if (views === null) {
-    message = `${message} (err)`;
+    // getUserViews swallows fetch errors and returns null; surface a clearer
+    // hint to the user. The exact reason (timeout, 5xx, rate limit) is in
+    // the console and Sentry.
+    message = 'Tracking unavailable';
+    title =
+      'Could not reach the tracking backend. Check your connection and try again in a moment.';
   }
 
   return (
-    <div style={style} onClick={onClick}>
+    <div style={style} onClick={onClick} title={title}>
       {message}
     </div>
   );
