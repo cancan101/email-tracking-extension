@@ -166,8 +166,10 @@ const getThreadViews = async (threadId: string): Promise<View[] | null> => {
       const responseData = await resp.json();
       return responseData.data ?? null;
     }
+    console.warn('getThreadViews: non-OK response', resp.status);
   } catch (e) {
-    console.log(e);
+    console.error('getThreadViews failed', e);
+    Sentry.captureException(e);
   }
   return null;
 };
@@ -307,8 +309,17 @@ async function getUserViews(): Promise<View[] | null> {
   try {
     resp = await fetchAuth(url);
   } catch (error) {
-    // TODO(cancan101): we could try to verify the type of error here
-    // and then selectively log / report to Sentry/
+    // AbortError (our own timeout) and TypeError (network) are the common
+    // benign cases; everything else gets a Sentry capture so we can spot
+    // backend regressions.
+    if (error instanceof DOMException && error.name === 'TimeoutError') {
+      console.warn('getUserViews timed out');
+    } else if (error instanceof TypeError) {
+      console.warn('getUserViews network error', error);
+    } else {
+      console.error('getUserViews failed', error);
+      Sentry.captureException(error);
+    }
     return null;
   }
   if (resp.ok) {
@@ -317,6 +328,8 @@ async function getUserViews(): Promise<View[] | null> {
       const allViews = respData.data as View[];
       return allViews.slice(0, INBOX_VIEW_LIST_MAX_SHOWN);
     }
+  } else {
+    console.warn('getUserViews: non-OK response', resp.status);
   }
   return null;
 }
@@ -505,7 +518,10 @@ gmail.observe.on('load', () => {
           body: JSON.stringify(reportData),
         });
       } catch (e) {
-        console.log(e);
+        // Tracker report failed; user already sent the email, so we can't
+        // do anything to recover, but we should at least know about it.
+        console.error('tracker report failed', e);
+        Sentry.captureException(e);
       }
     } else {
       console.log('No trackers found in email');
